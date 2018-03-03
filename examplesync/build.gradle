@@ -5,9 +5,9 @@ android {
     defaultConfig {
         applicationId 'com.ayush.aqui'
         minSdkVersion 26
-        targetSdkVersion 19
+        targetSdkVersion 23
         versionName project.VERSION_NAME
-        versionCode 2
+        versionCode 3
     }
     compileOptions {
         encoding "UTF-8"
