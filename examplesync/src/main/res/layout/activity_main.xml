@@ -1,63 +1,62 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingBottom="16dp"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
-                android:paddingTop="16dp"
-                tools:context="com.felhr.serialportexamplesync.MainActivity">
-
-    <TextView
-        android:id="@+id/textViewTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:text="@string/serial_port"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:visibility="gone" />
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="10dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="25dp"
+    android:clipToPadding="false"
+    android:elevation="30dp"
+    android:background="#242424"
+    >
 
     <TextView
         android:id="@+id/textView1"
         android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:background="#FFFFFF"
-        android:gravity="bottom"
-        android:scrollbars="vertical" />
+        android:translationZ="5dp"
+        android:layout_height="280dp"
+        android:background="#585858"
+        android:clipToPadding="false"
+        android:elevation="30dp"
+        android:lineSpacingExtra="2sp"
+        android:scrollbars="vertical"
+        android:paddingTop="40dp"
+        android:paddingLeft="4dp"
+        android:textSize="49sp"
+        tools:ignore="RtlCompat" />
 
-    <EditText
-        android:id="@+id/editText1"
+    <Button
+        android:id="@+id/savebtn"
+        style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/textView1"
-        android:layout_alignRight="@+id/textView1"
-        android:layout_below="@+id/textView1"
-        android:layout_marginTop="28dp"
-        android:ems="10"
-        android:visibility="gone">
+        android:layout_gravity="bottom|end"
+        android:stateListAnimator="@null"
+        android:clipToPadding="false"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:background="#FF4500"
+        android:elevation="20dp"
+        android:translationZ="2dp"
+        android:text="Upload"
+        android:fontFamily="sans-serif"
+        android:textSize="13sp"
+        android:textStyle="bold" />
 
-        <requestFocus />
-    </EditText>
+
 
     <Button
         android:id="@+id/buttonSend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/editText1"
-        android:layout_marginTop="26dp"
+
         android:text="Send"
         android:visibility="gone" />
     <CheckBox
         android:id="@+id/checkBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/buttonSend"
         android:checked="true"
         android:text="9600"
         android:visibility="gone" />
@@ -66,9 +65,6 @@
         android:id="@+id/checkBox2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/buttonSend"
         android:text="38400"
         android:visibility="gone" />
 
@@ -76,21 +72,19 @@
         android:id="@+id/buttonBaudrate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/checkBox2"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignRight="@+id/checkBox2"
-        android:layout_below="@+id/checkBox"
         android:text="Set baud rate"
-        android:visibility="gone" />
+        android:visibility="gone"
+        />
 
-    <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/adView"
+
+    <EditText
+        android:id="@+id/editText1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        ads:adSize="BANNER"
-        ads:adUnitId="ca-app-pub-3984854137774009/3272976317"></com.google.android.gms.ads.AdView>
+        android:ems="10"
+        android:visibility="gone">
+
+        <requestFocus />
+    </EditText>
 
 </RelativeLayout>

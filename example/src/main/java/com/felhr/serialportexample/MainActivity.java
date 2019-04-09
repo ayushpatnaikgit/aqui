@@ -6,25 +6,42 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import java.lang.ref.WeakReference;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
 
-    /*
-     * Notifications from UsbService will be received here.
-     */
+public class MainActivity extends AppCompatActivity
+        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,ActivityCompat.OnRequestPermissionsResultCallback {
+
+    private Location mLastLocation;
+    double latitude;
+    double longitude;
+    LocationHelper locationHelper;
+    static SharedPreference sharedPreference;
+
+
+
+
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -50,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private UsbService usbService;
     private TextView display;
     private EditText editText;
+    private CheckBox box9600, box38400;
     private MyHandler mHandler;
     private final ServiceConnection usbConnection = new ServiceConnection() {
         @Override
@@ -64,10 +82,88 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        Log.i("Connection failed:", " ConnectionResult.getErrorCode() = "
+                + result.getErrorCode());
+    }
+
+    @Override
+    public void onConnected(Bundle arg0) {
+
+        mLastLocation=locationHelper.getLocation();
+    }
+
+    @Override
+    public void onConnectionSuspended(int arg0) {
+        locationHelper.connectApiClient();
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        locationHelper.onRequestPermissionsResult(requestCode,permissions,grantResults);
+
+    }
+
+    public void showToast(String message)
+    {
+        Toast.makeText(this,message,Toast.LENGTH_SHORT).show();
+    }
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+       // MobileAds.initialize(this, "ca-app-pub-3984854137774009~1441019893");
+
+
+       /* AdView mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+*/
+
+       sharedPreference=new SharedPreference();
+
+        locationHelper=new LocationHelper(MainActivity.this);
+        locationHelper.checkpermission();
+
+
+
+/*        rlPick=findViewById(R.id.rlPickLocation);
+
+
+        rlPick.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                mLastLocation=locationHelper.getLocation();
+
+                if (mLastLocation != null) {
+                    latitude = mLastLocation.getLatitude();
+                    longitude = mLastLocation.getLongitude();
+
+                    Toast.makeText(MainActivity.this, "Lat Long"+latitude+" "+longitude, Toast.LENGTH_SHORT).show();
+
+                } else {
+                    showToast("Couldn't get the location. Make sure location is enabled on the device");
+                }
+            }
+        });*/
+
+
+
+        if (locationHelper.checkPlayServices()) {
+
+            locationHelper.buildGoogleApiClient();
+        }
 
         mHandler = new MyHandler(this);
 
@@ -83,6 +179,41 @@ public class MainActivity extends AppCompatActivity {
                         usbService.write(data.getBytes());
                     }
                 }
+            }
+        });
+
+
+
+        box9600 = (CheckBox) findViewById(R.id.checkBox);
+        box9600.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (box9600.isChecked())
+                    box38400.setChecked(false);
+                else
+                    box38400.setChecked(true);
+            }
+        });
+
+        box38400 = (CheckBox) findViewById(R.id.checkBox2);
+        box38400.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (box38400.isChecked())
+                    box9600.setChecked(false);
+                else
+                    box9600.setChecked(true);
+            }
+        });
+
+        Button baudrateButton = (Button) findViewById(R.id.buttonBaudrate);
+        baudrateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (box9600.isChecked())
+                    usbService.changeBaudRate(9600);
+                else
+                    usbService.changeBaudRate(38400);
             }
         });
     }
@@ -127,10 +258,14 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(mUsbReceiver, filter);
     }
 
+
+
+
+
     /*
      * This handler will be passed to UsbService. Data received from serial port is displayed through this handler
      */
-    private static class MyHandler extends Handler {
+    private class MyHandler extends Handler {
         private final WeakReference<MainActivity> mActivity;
 
         public MyHandler(MainActivity activity) {
@@ -142,13 +277,36 @@ public class MainActivity extends AppCompatActivity {
             switch (msg.what) {
                 case UsbService.MESSAGE_FROM_SERIAL_PORT:
                     String data = (String) msg.obj;
-                    mActivity.get().display.append(data);
+                    mActivity.get().display.append("\n" + data);
+
+                    mLastLocation=locationHelper.getLocation();
+
+                    if (mLastLocation != null) {
+                        latitude = mLastLocation.getLatitude();
+                        longitude = mLastLocation.getLongitude();
+
+                        Toast.makeText(MainActivity.this, "Lat Long Data"+latitude+" "+longitude+" "+data, Toast.LENGTH_SHORT).show();
+
+                        ModelClass item = new ModelClass(data,latitude,longitude);
+                        sharedPreference.addFavorite(MainActivity.this, item);
+
+                    } else {
+                        showToast("Couldn't get the location. Make sure location is enabled on the device");
+                    }
+
+
                     break;
                 case UsbService.CTS_CHANGE:
                     Toast.makeText(mActivity.get(), "CTS_CHANGE",Toast.LENGTH_LONG).show();
                     break;
                 case UsbService.DSR_CHANGE:
                     Toast.makeText(mActivity.get(), "DSR_CHANGE",Toast.LENGTH_LONG).show();
+                    break;
+                case UsbService.SYNC_READ:
+                    String buffer = (String) msg.obj;
+                    mActivity.get().display.append(buffer);
+                    mActivity.get().display.setText(buffer);
+
                     break;
             }
         }

@@ -21,7 +21,6 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 
 public class UsbService extends Service {
@@ -297,22 +296,38 @@ public class UsbService extends Service {
     private class ReadThread extends Thread {
         @Override
         public void run() {
+            int i = 0;
+            int m = 0;
+            int k = 0;
+            int rollwindow = 2;
             while(true){
+                i = i + 1;
                 byte[] buffer = new byte[10];
                 int n = serialPort.syncRead(buffer, 0);
+                if(i>2){
+                   rollwindow = 2 + i/5;
+
+                }
                 if(n > 0) {
+                    if(i%rollwindow==0){
+                        m = 0;
+                        k = 0;
+                    }
                     byte[] received = new byte[n];
                     System.arraycopy(buffer, 0, received, 0, n);
                     String receivedStr = new String(received);
                     BigInteger bi = new BigInteger(received);
                     String s =bi.toString();
                     // 120ff0
+                    m = m + (received[3]*256 +received[2])/10;
+                    k = k + (received[5]*256 + received[4])/10;
                     String l = String.valueOf((received[3]*256 +received[2])/10);
                     String j = String.valueOf((received[5]*256 + received[4])/10);
-                    String pm25 = "PM 2.5: ";
-                    String pm10 = "PM 10: ";
-                    String result = pm25 +l + " "+ pm10 + j +"\n";
-                    mHandler.obtainMessage(SYNC_READ, result).sendToTarget();
+                    String pm25 = "PM2.5: ";
+                    String pm10 = "PM10 : ";
+
+                    if(i%rollwindow==0){ String result = pm25 +m + " "+ pm10 + k +"\n";
+                    mHandler.obtainMessage(SYNC_READ, result).sendToTarget();}
                 }
             }
         }
