@@ -11,19 +11,20 @@
     android:background="#242424"
     >
 
+
     <TextView
         android:id="@+id/textView1"
         android:layout_width="match_parent"
-        android:translationZ="5dp"
         android:layout_height="280dp"
         android:background="#585858"
         android:clipToPadding="false"
         android:elevation="30dp"
         android:lineSpacingExtra="2sp"
-        android:scrollbars="vertical"
-        android:paddingTop="40dp"
         android:paddingLeft="4dp"
+        android:paddingTop="40dp"
+        android:scrollbars="vertical"
         android:textSize="49sp"
+        android:translationZ="5dp"
         tools:ignore="RtlCompat" />
 
     <Button
@@ -36,7 +37,7 @@
         android:clipToPadding="false"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:background="#FF4500"
+        android:background="#00C4FF"
         android:elevation="20dp"
         android:translationZ="2dp"
         android:text="Upload"
