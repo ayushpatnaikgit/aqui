@@ -36,6 +36,8 @@
 		.hero-media img { width:100%; height:auto; display:block; border-radius: 10px; }
 		.hero-copy h1 { font-size: clamp(2rem, 4.6vw, 3.4rem); line-height:1.08; margin:0 0 1rem; font-weight:650; letter-spacing:-.5px; }
 		.hero-copy p { font-size: clamp(1rem, 1.25vw, 1.15rem); max-width: 62ch; margin:0 0 1.1rem; color: var(--text-soft); }
+		.hero-actions { display:flex; flex-wrap:wrap; gap:.85rem; margin-top:1.25rem; align-items:center; }
+		.hero-actions .btn { font-size:.9rem; padding:.85rem 1.25rem; }
 		.tag { display:inline-block; background: linear-gradient(135deg,var(--accent), #b3e0ff); color:#ffffff; font-weight:600; padding:.4rem .8rem; font-size:.75rem; letter-spacing:.5px; text-transform:uppercase; border-radius: 999px; box-shadow:0 2px 6px -1px rgba(0,0,0,.4); }
 		.stack { display:flex; flex-wrap:wrap; gap:.75rem; margin:1.25rem 0 0; }
 		.stack a { font-size:.8rem; background:var(--bg-accent); color:var(--text-soft); padding:.55rem .85rem; border-radius: 999px; border:1px solid #262d37; transition:.25s background, .25s color, .25s border-color; }
@@ -99,12 +101,23 @@
 		.details h2 { margin:0 0 1rem; font-size: clamp(1.5rem, 3vw, 2.1rem); letter-spacing:-.5px; }
 		.details-grid { display: grid; gap: clamp(2rem, 4vw, 4rem); align-items: center; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
 		.details-media img { width:100%; height:auto; display:block; border-radius: 10px; }
+		/* Videos section */
+		.videos { margin-top: clamp(4rem, 10vh, 7rem); }
+		.videos-inner { background: var(--bg-accent); padding: clamp(1.75rem, 3vw, 3rem) clamp(1.5rem, 3vw, 3rem); border-radius: var(--radius); box-shadow: 0 4px 20px -5px rgba(0,0,0,.55), 0 2px 8px -3px rgba(0,0,0,.35); }
+		.videos h2 { margin:0 0 1rem; font-size: clamp(1.5rem, 3vw, 2.1rem); letter-spacing:-.5px; }
+		.videos .lead { font-size: clamp(1rem, 1.15vw, 1.07rem); color: var(--text-soft); max-width: 70ch; margin:0 0 1.75rem; }
+		.video-grid { display:grid; gap: clamp(1.5rem,2.2vw,2.2rem); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+		.video-card { display:flex; flex-direction:column; gap:.75rem; background: var(--bg); border-radius: 14px; padding:1rem 1rem 1.2rem; box-shadow: 0 3px 14px -4px rgba(0,0,0,.55), 0 2px 6px -3px rgba(0,0,0,.4); }
+		.video-frame { position:relative; width:100%; aspect-ratio: 16 / 9; background:#111922; border:1px solid #262d37; border-radius:10px; overflow:hidden; }
+		.video-frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+		.video-card h3 { margin:.2rem 0 .1rem; font-size:1rem; letter-spacing:.3px; font-weight:600; }
+		.video-card p { margin:0; font-size:.85rem; color: var(--text-soft); line-height:1.4; }
+		@media (prefers-color-scheme: light) { .video-card { box-shadow: 0 4px 16px -6px rgba(0,0,0,.15), 0 2px 8px -4px rgba(0,0,0,.08); } .video-frame { background:#eef2f5; border-color:#d9e0e6; } }
 	</style>
 </head>
 <body>
 	<div class="wrap">
 		<header>
-			<div class="brand">Aqui</div>
 		</header>
 		<section class="hero" aria-label="Aqui air quality sensor overview">
 			<div class="hero-media">
@@ -113,12 +126,17 @@
 				</figure>
 			</div>
 			<div class="hero-copy">
-					<h1>DIY AQI Sensor</h1>
+					<h1>Aqui: DIY AQI sensor</h1>
 					<p>Aqui is an air quality sensor that connects to a phone and shows the real-time PM2.5 and PM10 particulate readings. By leaning on your phone’s processor, battery, and connectivity, Aqui itself stays radically minimal, efficient, and frugal.</p>
 					<p>Aqui is an open-source DIY electronics project, released under the Creative Commons CC0 dedication. The parts can be ordered from AliExpress or other electronics suppliers, and the enclosure can be 3D printed.</p>
 					<p style="margin-top:1.1rem;font-size:.98em;color:var(--text-soft);background:var(--bg-accent);padding:.85em 1em .85em 1em;border-radius:10px;box-shadow:0 2px 8px -2px rgba(0,0,0,.08);">
 						If you want to buy a few assembled units, contact <a href="mailto:ayushpatnaik@gmail.com">ayushpatnaik@gmail.com</a> (Rs. 4000 per piece). We recommend building it yourself for the best learning and value.
 					</p>
+						<div class="hero-actions" aria-label="Primary actions">
+							<a class="btn" href="#videos" aria-label="Watch Aqui in action video">Watch Demo</a>
+							<a class="btn" href="#videos" aria-label="Watch assembly tutorial video">Assembly Video</a>
+							<a class="btn" href="assets/app-release.apk" download aria-label="Download the Aqui Android app APK">Download APK</a>
+						</div>
 					<div class="stack" aria-label="Project resources">
 						<a href="#" aria-label="View build guide (coming soon)">Build Guide</a>
 						<a href="#" aria-label="View parts list (coming soon)">Parts List</a>
@@ -162,6 +180,29 @@
 						<p>An <a href="https://aqicn.org/sensor/sds011/" target="_blank" rel="noopener">experiment by aqicn.org</a> shows the sensor is very accurate. It is suited for our use case i.e. intermittent air quality monitoring.</p>
 					</div>
 				</div>
+			</div>
+		</section>
+		<section class="videos" id="videos" aria-labelledby="videos-heading">
+			<div class="videos-inner">
+				<h2 id="videos-heading">Videos</h2>
+				<p class="lead">See Aqui working in the real world and learn how to assemble your own unit. These short clips demonstrate particulate spikes and the full build process.</p>
+				<div class="video-grid" role="list">
+					<article class="video-card" role="listitem">
+						<div class="video-frame">
+							<iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/qHSQzrInc68?rel=0&modestbranding=1" title="Aqui in action – live particulate spike demo" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+						</div>
+						<h3>Aqui In Action</h3>
+						<p>Live demonstration of how PM2.5 / PM10 readings respond when incense (agarbatti) is lit near the intake.</p>
+					</article>
+					<article class="video-card" role="listitem">
+						<div class="video-frame">
+							<iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/voxknoohHVE?rel=0&modestbranding=1" title="Aqui assembly tutorial – build your own sensor" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+						</div>
+						<h3>Assembly Tutorial</h3>
+						<p>Step-by-step walkthrough of sourcing parts, 3D printed case, and final assembly using the SDS011 sensor.</p>
+					</article>
+				</div>
+				<noscript><p style="font-size:.8rem;color:var(--text-soft);margin-top:1rem;">Video embeds require JavaScript/iframes. Watch directly on YouTube: <a href="https://youtu.be/qHSQzrInc68">Action Demo</a> • <a href="https://youtu.be/voxknoohHVE">Assembly Guide</a>.</p></noscript>
 			</div>
 		</section>
 		<section class="models" id="models" aria-labelledby="models-heading">
