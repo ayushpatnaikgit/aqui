@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>A frugal DIY air quality monitor</title>
+</head>
+<body>
+
+<h3>A frugal DIY air quality monitor</h3>
+
+<p>by Ayush Patnaik.</p>
+
+<p>Particulate matter pollution creates a public health crisis in India and other emerging economies. Yet individuals lack access to immediate, localised air quality data. This data matters for personal decisions: whether to exercise outdoors, wear a mask, or run an air purifier. It also helps test whether air cleaning devices work by comparing inlet and outlet readings.</p>
+
+<p>Air quality varies dramatically across short distances, making hyperlocal measurement essential. Government monitoring stations are sparse and report delayed data. In Haryana, all state AQI stations went offline in April 2025 and remained down for months (Times of India, 2025). Even where stations exist, authorities sometimes relocate them to cleaner areas (Hindustan Times, 2023). Commercial devices like the <a href="https://support.kaiterra.com/about-laser-egg">Laser Egg</a> offer an alternative but present barriers to widespread adoption. They cost around Rs. 15,000, are heavy and bulky, and require regular charging.</p>
+
+<p>The Aqui project addresses these gaps (Figure 1). It demonstrates that a DIY product can enable citizen-led data collection and improve public understanding of local air quality dynamics.</p>
+
+<p><i>This article updates an earlier version published at <a href="https://blog.theleapjournal.org/2018/03/a-frugal-air-quality-monitor.html">LEAP Blog</a>.</i></p>
+
+<p>Project website: <a href="https://ayushpatnaikgit.github.io/aqui/">https://ayushpatnaikgit.github.io/aqui/</a></p>
+
+<p>Image file product.gif here</p>
+<p><i>Figure 1: The Aqui air quality monitor in use, showing real-time PM2.5 and PM10 readings on an Android device.</i></p>
+
+<h3>Design approach</h3>
+
+<p>The design follows radical frugality through functional delegation to the host device. It centres on the SDS011 sensor (Figure 2), which costs around Rs. 1,200, for real-time measurement of PM2.5 and PM10 concentrations.</p>
+
+<p>Image file sds011-large.png here</p>
+<p><i>Figure 2: The SDS011 particulate matter sensor, which forms the core of the Aqui monitoring system.</i></p>
+
+<p>This class of low-cost optical sensor has limitations. It degrades within weeks under continuous operation as particles trap in its mechanism (World Air Quality Index, 2025). But the design objective focuses on intermittent monitoring driven by citizen curiosity and spot measurements. This mitigates the degradation issue.</p>
+
+<p>The sensor interfaces directly with Android devices via USB Serial Cable and USB-OTG adapter. This eliminates the need for microcontrollers, displays, batteries, and wireless modules. These components drive cost and bulk in commercial devices. Delegating processing and power to the user's smartphone cuts both.</p>
+
+<p>The Aqui Android companion app is open‑source on GitHub. It connects to the sensor over USB serial and streams the live particulate data (PM2.5 / PM10) to your phone.</p>
+
+<p>The physical enclosure uses 3D printing for low-cost replication. The entire project is released under Creative Commons CC0 (Public Domain) dedication. All design files and code are freely accessible for scrutiny, replication, and modification.</p>
+
+<h3>Results</h3>
+
+<p>Total component cost for a complete Aqui sensor is approximately Rs. 2,000. This includes the SDS011, cables, and 3D-printed enclosure. The cost represents an order-of-magnitude reduction compared to commercial-grade monitors.</p>
+
+<p>The sensor streams live PM data via the companion Android application. Response time is seconds. In controlled demonstrations, the device measured clear differences in PM2.5 readings between a busy road and a park 50 metres away. This immediate visualisation captures real-time pollution gradients missing from centralised data.</p>
+
+<p>People understand air quality differently when they see their own numbers. Abstract government statistics become personal, actionable information that influences health decisions.</p>
+
+<h3>Discussion</h3>
+
+<p>Aqui addresses practical gaps in air quality monitoring by providing an accessible, data-generating tool. Delegating key functions to smartphones achieves the frugality needed for mass citizen adoption. This fills data gaps created by sparse and delayed government monitoring.</p>
+
+<p>The SDS011 sensor choice remains optimal for intermittent, curiosity-driven spot-checking despite its continuous operation constraints. The policy impact lies in making citizens aware by turning abstract statistics into personal information that directly influences health decisions.</p>
+
+<p>The hands-on nature provides a pathway for scientific curiosity and learning. Users transition from passive news consumers to active environmental investigators. This citizen science mindset, driven by curiosity and enabled by affordable technology, anchors a more responsive and engaged air quality strategy.</p>
+
+<p>Dense networks of distributed Aqui sensors could create curiosity-driven air quality maps. Future work should focus on methodologies for crowdsourcing and aggregating such data.</p>
+
+<h3>Resources and build guide</h3>
+
+<p>The Aqui project is open-source. All files, documentation, and videos are available:</p>
+
+<ul>
+<li>Demo video: <a href="https://youtu.be/qHSQzrInc68">Aqui in action</a></li>
+<li>Assembly tutorial: <a href="https://youtu.be/voxknoohHVE">Step-by-step assembly</a></li>
+<li>Android app: <a href="https://ayushpatnaikgit.github.io/aqui/assets/app-release.apk">Download APK</a> for sideloading</li>
+<li>Source code: <a href="https://github.com/ayushpatnaikgit/aqui">Android app on GitHub</a></li>
+<li>SDS011 sensor: <a href="https://www.aliexpress.com/item/32817084913.html">Example parts link</a></li>
+<li>3D print files: <a href="https://ayushpatnaikgit.github.io/aqui/assets/orange%20top.stl">Top shell</a>, <a href="https://ayushpatnaikgit.github.io/aqui/assets/black%20base.stl">Base shell</a></li>
+<li>Full assembly model: <a href="https://ayushpatnaikgit.github.io/aqui/assets/casing%20v9.step">STEP file</a> for remixing</li>
+<li>Complete build guide: <a href="https://ayushpatnaikgit.github.io/aqui/#diy-build-guide">Parts list and instructions</a></li>
+</ul>
+
+<h3>References</h3>
+
+<p>Hindustan Times (2023). "Now, BMC Seeks to Shift Air Quality Monitors to 'Cleaner' Areas." 5 February 2023. <a href="https://www.hindustantimes.com/cities/mumbai-news/now-bmc-seeks-to-shift-air-quality-monitors-to-cleaner-areas-101675537753172.html">https://www.hindustantimes.com/cities/mumbai-news/now-bmc-seeks-to-shift-air-quality-monitors-to-cleaner-areas-101675537753172.html</a>.</p>
+
+<p>Times of India (2025). "No Pollution Data from Haryana as All State AQI Stations Offline since April." 29 July 2025. <a href="https://timesofindia.indiatimes.com/india/no-pollution-data-from-haryana-as-all-state-aqi-stations-offline-since-april/articleshow/122963786.cms">https://timesofindia.indiatimes.com/india/no-pollution-data-from-haryana-as-all-state-aqi-stations-offline-since-april/articleshow/122963786.cms</a>.</p>
+
+<p>World Air Quality Index (2025). "The SDS011 Air Quality Sensor Experiment." Accessed 7 October 2025. <a href="https://aqicn.org/sensor/sds011/">https://aqicn.org/sensor/sds011/</a>.</p>
+
+<p>Ayush Patnaik is a Senior Research Associate at xKDR Forum. Special thanks to Saurabh Nandedkar for help building the app.</p>
+
+</body>
+</html>

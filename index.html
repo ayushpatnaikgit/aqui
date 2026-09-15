@@ -3,313 +3,806 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Aqui – Open Air Quality Sensor</title>
+	<title>Aqui – DIY Air Quality Sensor</title>
 	<meta name="description" content="Aqui is an ultra-frugal, open-source DIY air quality sensor that pairs with your phone to show real‑time PM2.5 and PM10." />
+	<meta name="theme-color" content="#f2f1f0" />
+	<link rel="icon" type="image/svg+xml" href="assets/brand/aqui-icon.svg" />
+	<link rel="apple-touch-icon" href="assets/brand/aqui-icon-512.png" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Montserrat:wght@600;700;800;900&display=swap" />
 	<style>
+		/*
+		 * Visual system in xkdr.org's design language, matching the Aqui app:
+		 * warm paper, black, and a coral display accent; Montserrat for headings,
+		 * labels and buttons, Merriweather for reading text; square corners and
+		 * 2px black rules.
+		 */
 		:root {
-			--bg: #0f1115;
-			--bg-accent: #161a21;
-			--text: #e6e8ea;
-			--text-soft: #b2b8bf;
-			--accent: #449eff;
-			--max-width: 1180px;
-			--radius: 14px;
-			--font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+			--paper: #f2f1f0;
+			--ink: #000000;
+			--body: #212529;
+			--muted: #4b4b4b;
+			--faint: #7a7a7a;
+			--rule: #d6d6d6;
+			--coral: #f57d6a;
+			/* Large headings. Coral is below text-contrast minimums on paper; use var(--ink) to fix that. */
+			--display: var(--coral);
+			--sans: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+			--serif: "Merriweather", Georgia, serif;
+			--gutter: clamp(16px, 6vw, 96px);
+			--max: 1240px;
+			color-scheme: light;
 		}
 		* { box-sizing: border-box; }
-		html, body { padding:0; margin:0; }
-		body {
-			font-family: var(--font-stack);
-			background: radial-gradient(circle at 20% 20%, #1d242d, #0f1115 55%);
-			color: var(--text);
-			-webkit-font-smoothing: antialiased;
-			line-height: 1.5;
+		[hidden] { display: none !important; }
+		html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+		body { margin: 0; background: var(--paper); color: var(--body); font-family: var(--serif); font-size: 15px; line-height: 1.75; -webkit-font-smoothing: antialiased; }
+		img, video { max-width: 100%; display: block; }
+		a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--coral); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+		a:hover { color: var(--coral); }
+		:focus-visible { outline: 3px solid var(--coral); outline-offset: 2px; }
+		.wrap { max-width: var(--max); margin: 0 auto; padding-inline: var(--gutter); }
+		.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+		/* Type */
+		h1, h2, h3 { font-family: var(--sans); margin: 0; }
+		h1 { font-weight: 800; color: var(--display); font-size: clamp(40px, 6vw, 76px); line-height: 1.02; letter-spacing: -0.02em; margin-bottom: 28px; }
+		h2 { font-weight: 700; color: var(--display); font-size: clamp(32px, 4vw, 48px); line-height: 1.1; letter-spacing: -0.01em; margin-bottom: 20px; }
+		h3 { font-weight: 800; color: var(--ink); font-size: 20px; line-height: 1.3; margin-bottom: 8px; }
+		p { margin: 0 0 16px; }
+		.eyebrow { font-family: var(--sans); font-weight: 800; font-size: 12px; line-height: 1.5; letter-spacing: 3px; text-transform: uppercase; color: var(--ink); margin: 0 0 20px; }
+		.intro { max-width: 62ch; }
+		.small { font-size: 13px; line-height: 1.7; color: var(--muted); }
+
+		/* Buttons: square black blocks, as on xkdr.org */
+		.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 28px; border: 2px solid var(--ink); background: var(--ink); color: var(--paper); font-family: var(--sans); font-weight: 900; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; transition: background .15s, color .15s, border-color .15s; }
+		.btn:hover { background: var(--coral); border-color: var(--coral); color: var(--ink); }
+		.btn.outline { background: transparent; color: var(--ink); }
+		.btn.outline:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+		.btn.compact { min-height: 40px; padding: 0 18px; font-size: 11px; }
+		.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+
+		/* Top bar */
+		.topbar { position: sticky; top: 0; z-index: 10; background: var(--paper); border-bottom: 2px solid var(--ink); }
+		.topbar .wrap { display: flex; align-items: center; gap: 32px; height: 72px; }
+		.brand { display: flex; color: var(--ink); }
+		.brand svg { width: 74px; height: 30px; }
+		.nav { display: flex; gap: 28px; margin-left: auto; }
+		.nav a, .footer-links a, .quick-links a { font-family: var(--sans); font-weight: 800; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; color: var(--ink); }
+		.nav a:hover, .quick-links a:hover { color: var(--coral); }
+
+		/* Hero */
+		.hero { padding-block: clamp(48px, 8vw, 112px); }
+		.split { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(32px, 5vw, 80px); align-items: start; }
+		.tile { width: 96px; height: 96px; display: block; margin-bottom: 32px; }
+		.hero .lead p { max-width: 58ch; }
+		.quick-links { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 24px; }
+		.quick-links a { font-size: 11px; letter-spacing: 1.5px; border-bottom: 2px solid var(--coral); padding-bottom: 2px; }
+		.byline { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--rule); }
+		.frame { border: 2px solid var(--ink); background: var(--paper); }
+		figure { margin: 0; }
+		figcaption { font-family: var(--sans); font-weight: 700; font-size: 11px; line-height: 1.5; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); margin-top: 10px; }
+
+		/* Cards: 2px black outline with a coral tag in the corner */
+		.card { position: relative; border: 2px solid var(--ink); padding: 44px 24px 24px; background: var(--paper); }
+		.card p:last-child { margin-bottom: 0; }
+		.card p { font-size: 14px; line-height: 1.8; }
+		.tag { position: absolute; top: 0; right: 0; background: var(--coral); color: var(--ink); font-family: var(--sans); font-weight: 800; font-size: 11px; line-height: 1.6; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; }
+		.offer { margin-top: 24px; }
+		.grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+
+		/* Sections */
+		.section { border-top: 2px solid var(--ink); padding-block: clamp(56px, 8vw, 104px); }
+		.section-head { margin-bottom: 48px; }
+
+		/* App */
+		.app-grid { align-items: center; }
+		.chip { display: inline-block; background: var(--ink); color: var(--paper); font-family: var(--sans); font-weight: 800; font-size: 11px; line-height: 1.6; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; margin-bottom: 20px; }
+		.changes { list-style: none; padding: 0; margin: 28px 0 0; border-top: 2px solid var(--ink); }
+		.changes li { display: grid; grid-template-columns: 24px 1fr; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+		.changes li::before { content: ""; width: 10px; height: 10px; background: var(--coral); margin-top: 9px; }
+		.changes strong { font-family: var(--sans); font-weight: 800; color: var(--ink); }
+		.download { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 32px; }
+		.meta { font-family: var(--sans); font-weight: 600; font-size: 12px; line-height: 1.6; color: var(--ink); }
+		.download + .small { margin-top: 16px; }
+
+		/*
+		 * Phone illustration, laid out from the app's EmptyState and LiveReading
+		 * screens. Sizes are in em, so the same design works at 10px in the app
+		 * section and scales with the frame in the hero animation.
+		 */
+		.phone { font-size: 10px; width: 30em; max-width: 100%; aspect-ratio: 9 / 18.5; margin-inline: auto; border: 1em solid var(--ink); border-radius: 3.4em; background: var(--paper); padding: 2.2em 1.8em 1.8em; display: flex; flex-direction: column; gap: 1.2em; overflow: hidden; font-family: var(--sans); color: var(--ink); line-height: 1.4; }
+		.ph-bar { position: relative; display: flex; justify-content: space-between; align-items: center; height: 1.6em; font-weight: 700; }
+		.ph-cam { position: absolute; left: 50%; top: 50%; width: 1.2em; height: 1.2em; margin: -.6em; border-radius: 50%; background: var(--ink); }
+		.ph-sys { display: flex; align-items: flex-end; gap: .2em; height: 1em; }
+		.ph-sys i { width: .3em; background: var(--ink); }
+		.ph-sys i:nth-child(1) { height: .4em; }
+		.ph-sys i:nth-child(2) { height: .7em; }
+		.ph-sys i:nth-child(3) { height: 1em; }
+		.ph-sys b { width: 1.9em; height: 1em; margin-left: .4em; border: 1px solid var(--ink); padding: 1px; background: linear-gradient(90deg, var(--ink) 70%, transparent 70%) content-box; }
+		.ph-top { display: flex; justify-content: space-between; align-items: center; padding-bottom: .8em; border-bottom: 1px solid var(--ink); font-weight: 700; text-transform: uppercase; }
+		.ph-top b { font-size: 1.2em; }
+		.ph-status { display: flex; align-items: center; gap: .6em; font-size: 1em; }
+		.ph-status i { width: .7em; height: .7em; background: var(--ink); }
+		.ph-status.st-off { color: var(--faint); }
+		.ph-status.st-off i { background: transparent; border: 1px solid var(--faint); }
+		.ph-views { flex: 1; min-height: 0; display: grid; }
+		.ph-view { grid-area: 1 / 1; min-height: 0; display: flex; flex-direction: column; gap: 1.2em; }
+		.ph-empty { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 1.6em; }
+		.ph-icon { width: 3.8em; height: 3.8em; }
+		.ph-title { font-weight: 700; font-size: 2.5em; line-height: 1.25; color: var(--display); }
+		.ph-body { font-family: var(--serif); font-size: 1.1em; line-height: 1.8; color: var(--body); }
+		.ph-center { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 1em; }
+		.ph-label { font-weight: 700; font-size: 1.1em; }
+		.ph-num { font-weight: 800; font-size: 12.8em; line-height: .85; letter-spacing: -0.06em; color: var(--display); margin-left: -.05em; }
+		.ph-band { display: flex; align-items: center; gap: .55em; font-weight: 800; font-size: 1.5em; }
+		.sw { width: .8em; height: .8em; }
+		.ph-hint { font-family: var(--serif); font-size: 1.1em; line-height: 1.6; color: var(--muted); margin-top: -.7em; }
+		.ph-hair { height: 1px; background: var(--rule); }
+		.ph-pm10 { display: flex; justify-content: space-between; align-items: flex-end; }
+		.ph-pm10 .ph-label { color: var(--muted); font-size: 1em; }
+		.ph-pm10 .v { font-weight: 800; font-size: 3.6em; line-height: 1; letter-spacing: -0.03em; }
+		.ph-pm10 .ph-band { font-size: 1.3em; }
+		.ph-foot { display: flex; flex-direction: column; gap: 1em; border-top: 1px solid var(--ink); padding-top: 1em; }
+		.ph-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1em; font-size: 1em; }
+		.ph-row .l { font-family: var(--serif); color: var(--body); }
+		.ph-row .r { font-weight: 600; white-space: nowrap; }
+		.ph-row .r b { font-weight: 800; }
+		.ph-row .u { font-family: var(--serif); font-weight: 400; color: var(--muted); }
+		.ph-btn { background: var(--ink); color: var(--paper); height: 3.6em; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1em; letter-spacing: .12em; text-transform: uppercase; }
+		.app-figure figcaption { text-align: center; }
+
+		/* Hero animation. The script at the end of the page steps data-state through unplugged, cable, listening and live. */
+		.demo { position: relative; aspect-ratio: 1; container-type: inline-size; overflow: hidden; }
+		.demo-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+		.demo .phone { position: absolute; left: 52%; top: 6%; width: 38%; margin: 0; font-size: 1.2667cqw; padding-top: 1em; }
+		.demo .ph-view { opacity: 0; transition: opacity .3s; }
+		.demo[data-state="unplugged"] .v-empty,
+		.demo[data-state="cable"] .v-empty,
+		.demo[data-state="listening"] .v-listen,
+		.demo[data-state="live"] .v-live { opacity: 1; }
+		.demo[data-state="listening"] .v-listen { transition-delay: .2s; }
+		.st-on,
+		.demo[data-state="listening"] .st-off,
+		.demo[data-state="live"] .st-off { display: none; }
+		.demo[data-state="listening"] .st-on,
+		.demo[data-state="live"] .st-on { display: flex; }
+		/* The gap is longer than the cable so no sliver of the next dash shows while it's hidden. */
+		.cable { stroke-dasharray: 1 2; stroke-dashoffset: 1; transition: stroke-dashoffset .6s ease-in .25s; }
+		.demo:not([data-state="unplugged"]) .cable { stroke-dashoffset: 0; transition: stroke-dashoffset .9s ease-out; }
+		.plug { opacity: 0; transform: translateY(5px); transition: opacity .25s, transform .25s; }
+		.demo[data-state="cable"] .plug { opacity: 1; transform: translateY(4px); transition: opacity .2s .75s, transform .2s .75s; }
+		.demo[data-state="listening"] .plug,
+		.demo[data-state="live"] .plug { opacity: 1; transform: none; transition: transform .25s ease-in; }
+		.dust { opacity: 0; transition: opacity .6s; }
+		.demo[data-state="listening"] .dust,
+		.demo[data-state="live"] .dust { opacity: 1; }
+		.dust circle { animation: drift 2.4s linear infinite; }
+		@keyframes drift {
+			0% { transform: translateX(0); opacity: 0; }
+			25% { opacity: .8; }
+			100% { transform: translateX(9px); opacity: 0; }
 		}
-		a { color: var(--accent); text-decoration: none; }
-		a:hover { text-decoration: underline; }
-		.wrap { max-width: var(--max-width); margin: 0 auto; padding: clamp(1.5rem, 3vw, 3rem) clamp(1rem, 2.2vw, 2.25rem); }
-		header { padding-top: .5rem; }
-		.brand { font-weight:600; letter-spacing:.5px; font-size:1rem; text-transform:uppercase; color:var(--text-soft); }
-		.hero { display: grid; gap: clamp(2rem, 4vw, 4rem); align-items: center; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-top: clamp(1rem, 3vh, 3rem); }
-		.hero-media { position:relative; }
-		.hero-media figure { margin:0; background: var(--bg-accent); padding: .75rem; border-radius: var(--radius); box-shadow: 0 4px 16px -4px rgba(0,0,0,.55), 0 2px 4px -1px rgba(0,0,0,.4); }
-		.hero-media img { width:100%; height:auto; display:block; border-radius: 10px; }
-		.hero-copy h1 { font-size: clamp(2rem, 4.6vw, 3.4rem); line-height:1.08; margin:0 0 1rem; font-weight:650; letter-spacing:-.5px; }
-		.hero-copy p { font-size: clamp(1rem, 1.25vw, 1.15rem); max-width: 62ch; margin:0 0 1.1rem; color: var(--text-soft); }
-		.hero-actions { display:flex; flex-wrap:wrap; gap:.85rem; margin-top:1.25rem; align-items:center; }
-		.hero-actions .btn { font-size:.9rem; padding:.85rem 1.25rem; }
-		.tag { display:inline-block; background: linear-gradient(135deg,var(--accent), #b3e0ff); color:#ffffff; font-weight:600; padding:.4rem .8rem; font-size:.75rem; letter-spacing:.5px; text-transform:uppercase; border-radius: 999px; box-shadow:0 2px 6px -1px rgba(0,0,0,.4); }
-		.stack { display:flex; flex-wrap:wrap; gap:.75rem; margin:1.25rem 0 0; }
-		.stack a { font-size:.8rem; background:var(--bg-accent); color:var(--text-soft); padding:.55rem .85rem; border-radius: 999px; border:1px solid #262d37; transition:.25s background, .25s color, .25s border-color; }
-		.stack a:hover { background:#222a34; color:var(--text); border-color:#333d49; }
-		footer { margin-top: 6rem; padding: 3rem 0 4rem; font-size:.75rem; color: var(--text-soft); text-align:center; }
-		footer a { color: var(--text-soft); }
-		footer a:hover { color: var(--accent); }
-		/* App section */
-		.app { margin-top: clamp(3.5rem, 8vh, 6rem); }
-		.app-inner { background: var(--bg-accent); padding: clamp(1.75rem, 3vw, 3rem) clamp(1.5rem, 3vw, 3rem); border-radius: var(--radius); box-shadow: 0 4px 20px -5px rgba(0,0,0,.55), 0 2px 8px -3px rgba(0,0,0,.35); }
-		.app h2 { margin:0 0 1rem; font-size: clamp(1.5rem, 3vw, 2.1rem); letter-spacing:-.5px; }
-		.app .lead { font-size: clamp(1rem, 1.15vw, 1.1rem); color: var(--text-soft); max-width: 70ch; margin:0 0 1.5rem; }
-		.app-grid { display: grid; gap: clamp(2rem, 4vw, 4rem); align-items: start; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-		.app-actions { display:flex; flex-wrap:wrap; gap:1rem; align-items:center; }
-		.btn { --btn-bg: #4A90E2; --btn-text:#ffffff; position:relative; display:inline-flex; align-items:center; gap:.5rem; font-weight:600; padding:.95rem 1.5rem; font-size:.95rem; letter-spacing:.3px; border-radius: 12px; border:none; cursor:pointer; background: linear-gradient(135deg, #4A90E2, #74B9FF); color:var(--btn-text); box-shadow: 0 4px 15px -3px rgba(74,144,226,.4), 0 2px 8px -2px rgba(0,0,0,.15); transition:.3s all ease; }
-		.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(74,144,226,.5), 0 4px 12px -3px rgba(0,0,0,.2); text-decoration:none; }
-		.btn:active { transform: translateY(0); box-shadow: 0 2px 8px -2px rgba(74,144,226,.3); }
-		.note { font-size:.8rem; color: var(--text-soft); }
-		@media (prefers-color-scheme: light) { .app-inner { box-shadow: 0 6px 24px -8px rgba(0,0,0,.12), 0 3px 12px -5px rgba(0,0,0,.08); } }
-		/* Models section */
-		.models { margin-top: clamp(4rem, 10vh, 7rem); }
-		.models h2 { margin:0 0 1rem; font-size: clamp(1.6rem, 3.2vw, 2.2rem); letter-spacing:-.4px; }
-		.models .lead { font-size: clamp(1rem, 1.05vw, 1.05rem); color: var(--text-soft); max-width: 72ch; margin:0 0 2rem; }
-		.model-grid { display: grid; gap: clamp(1.25rem, 2vw, 2rem); grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-		.model-card { display:flex; flex-direction:column; background: var(--bg-accent); border-radius: var(--radius); padding: 1rem 1rem 1.1rem; box-shadow: 0 3px 14px -4px rgba(0,0,0,.55), 0 2px 6px -3px rgba(0,0,0,.4); position:relative; }
-		.model-card.optional:before { content:"Optional"; position:absolute; top:.65rem; right:.7rem; font-size:.55rem; letter-spacing:.8px; font-weight:600; background:#26303b; color:var(--text-soft); padding:.25rem .45rem; border-radius:6px; text-transform:uppercase; }
-		.model-title { margin:.2rem 0 .75rem; font-size:1rem; letter-spacing:.25px; font-weight:600; }
-		.viewer-frame { aspect-ratio: 1 / 0.85; background: linear-gradient(145deg,#1a222b,#0e1013); border:1px solid #262d37; border-radius: 10px; position:relative; overflow:hidden; }
-		.viewer-frame.placeholder { display:flex; align-items:center; justify-content:center; font-size:.75rem; color:var(--text-soft); background: repeating-linear-gradient(45deg,#1a222b 0 10px,#131a21 10px 20px); }
-		.step-note { opacity:.75; }
-		.model-actions { margin-top:.85rem; display:flex; flex-wrap:wrap; gap:.6rem; }
-		.btn.ghost { background: #1d2430; color: var(--text-soft); box-shadow:none; border:1px solid #2b3643; background-image:none; }
-		.btn.ghost:hover { background:#242e3a; color: var(--text); border-color:#35424f; transform:none; box-shadow: 0 2px 8px -4px rgba(0,0,0,.6); }
-		.viewer-frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
-		/* Contribute section */
-		.contribute { margin-top: clamp(4rem, 10vh, 7rem); }
-		.contribute-inner { background: var(--bg-accent); padding: clamp(1.75rem, 3vw, 3rem) clamp(1.5rem, 3vw, 3rem); border-radius: var(--radius); box-shadow: 0 4px 20px -5px rgba(0,0,0,.55), 0 2px 8px -3px rgba(0,0,0,.35); }
-		.contribute h2 { margin:0 0 1rem; font-size: clamp(1.5rem, 3vw, 2.1rem); letter-spacing:-.5px; }
-		.contribute .lead { font-size: clamp(1rem, 1.15vw, 1.1rem); color: var(--text-soft); max-width: 70ch; margin:0 0 1.5rem; }
-		.contribute-grid { display: grid; gap: clamp(1.25rem, 2vw, 2rem); grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-		.contribute-card { background: var(--bg); padding: 1.5rem; border-radius: var(--radius); }
-		.contribute-card h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
-		.contribute-card p { font-size: 0.9rem; color: var(--text-soft); margin: 0; }
-		@media (prefers-color-scheme: light) { .model-card { box-shadow: 0 4px 16px -6px rgba(0,0,0,.15), 0 2px 8px -4px rgba(0,0,0,.08); } .viewer-frame { background: linear-gradient(145deg,#f3f6f9,#dfe4ea); border-color:#d9e0e6; } .btn.ghost { background:#f5f7f9; border-color:#d9e0e6; } .btn.ghost:hover { background:#eef2f5; border-color:#cfd7de; } }
-		@media (prefers-color-scheme: light) {
-			:root { --bg:#f5f7fa; --bg-accent:#ffffff; --text:#1b232c; --text-soft:#5a646f; }
-			body { background: radial-gradient(circle at 20% 20%, #ffffff, #f1f4f7 70%); }
-			.hero-media figure { box-shadow: 0 4px 18px -3px rgba(0,0,0,.18), 0 3px 8px -2px rgba(0,0,0,.12); }
-			.stack a { border-color:#e2e6ea; }
-			.stack a:hover { background:#eef2f5; }
+		.demo.instant, .demo.instant * { transition: none !important; }
+
+		/* Parts */
+		.part img { width: 100%; height: 160px; object-fit: contain; margin: 0 auto 20px; }
+		.notes { margin: 32px 0 0; padding-left: 1.2em; max-width: 72ch; }
+		.notes li { margin-bottom: 6px; }
+
+		/* Videos */
+		.video { position: relative; aspect-ratio: 16 / 9; border: 2px solid var(--ink); background: var(--ink); }
+		.video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+		.video-item h3 { margin-top: 20px; }
+		.video-item p { font-size: 14px; }
+
+		/* Sensor */
+		.sensor-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; }
+		.sensor-grid img { width: 100%; height: auto; }
+
+		/* 3D case */
+		.viewer { position: relative; aspect-ratio: 1 / 0.85; border: 2px solid var(--ink); background: #e8e7e5; overflow: hidden; margin-bottom: 16px; }
+		.viewer canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+		.viewer canvas:active { cursor: grabbing; }
+		.viewer-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; margin: 0; padding: 24px; text-align: center; font-family: var(--sans); font-weight: 700; font-size: 11px; line-height: 1.6; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+		.viewer.note { display: flex; align-items: center; padding: 24px; background: var(--paper); font-size: 13px; line-height: 1.8; }
+		.model h3 { margin-bottom: 12px; }
+
+		/* Contribute */
+		.ways { display: grid; gap: 32px 40px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+		.way { border-top: 2px solid var(--ink); padding-top: 16px; }
+		.way .num { font-family: var(--sans); font-weight: 800; font-size: 13px; letter-spacing: 1px; color: var(--coral); display: block; margin-bottom: 8px; }
+		.way p { font-size: 14px; margin: 0; }
+		.closing { margin-top: 48px; max-width: 72ch; }
+
+		/* Footer: black, then a coral strip */
+		.footer { background: var(--ink); color: var(--paper); padding-block: 56px; }
+		.footer-grid { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 40px; }
+		.footer .brand { color: var(--paper); margin-bottom: 16px; }
+		.footer .brand svg { width: 99px; height: 40px; }
+		.footer p { font-size: 13px; line-height: 1.8; color: #c4c4c4; max-width: 40ch; }
+		.footer h4 { font-family: var(--sans); font-weight: 800; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--coral); margin: 8px 0 16px; }
+		.footer-links { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+		.footer-links a { color: var(--paper); font-weight: 600; font-size: 13px; letter-spacing: .5px; text-transform: none; }
+		.footer-links a:hover { color: var(--coral); }
+		.footer-last { background: var(--coral); color: var(--ink); font-family: var(--sans); font-weight: 700; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+		.footer-last .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding-block: 14px; }
+		.footer-last a { color: var(--ink); text-decoration-color: var(--ink); }
+		.footer-last a:hover { color: var(--paper); }
+
+		@media (max-width: 960px) {
+			.nav { display: none; }
+			.topbar .btn { margin-left: auto; }
+			.split, .sensor-grid { grid-template-columns: minmax(0, 1fr); }
+			.footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+			.footer-grid > :first-child { grid-column: 1 / -1; }
 		}
-		@media (max-width: 680px) {
-			.hero { margin-top: 1.25rem; }
-			.hero-copy h1 { font-size: clamp(2rem, 10vw, 2.7rem); }
+		@media (max-width: 480px) {
+			.topbar .wrap { gap: 16px; height: 64px; }
+			.btn { padding: 0 20px; }
+			.actions .btn { flex: 1 1 100%; }
+			.footer-grid { grid-template-columns: minmax(0, 1fr); }
 		}
-		/* Reduced motion */
-		@media (prefers-reduced-motion: reduce) { * { animation:none!important; transition:none!important; } }
-		/* Details section */
-		.details { margin-top: clamp(4rem, 10vh, 7rem); }
-		.details-inner { background: var(--bg-accent); padding: clamp(1.75rem, 3vw, 3rem) clamp(1.5rem, 3vw, 3rem); border-radius: var(--radius); box-shadow: 0 4px 20px -5px rgba(0,0,0,.55), 0 2px 8px -3px rgba(0,0,0,.35); }
-		.details h2 { margin:0 0 1rem; font-size: clamp(1.5rem, 3vw, 2.1rem); letter-spacing:-.5px; }
-		.details-grid { display: grid; gap: clamp(2rem, 4vw, 4rem); align-items: center; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-		.details-media img { width:100%; height:auto; display:block; border-radius: 10px; }
-		/* Videos section */
-		.videos { margin-top: clamp(4rem, 10vh, 7rem); }
-		.videos-inner { background: var(--bg-accent); padding: clamp(1.75rem, 3vw, 3rem) clamp(1.5rem, 3vw, 3rem); border-radius: var(--radius); box-shadow: 0 4px 20px -5px rgba(0,0,0,.55), 0 2px 8px -3px rgba(0,0,0,.35); }
-		.videos h2 { margin:0 0 1rem; font-size: clamp(1.5rem, 3vw, 2.1rem); letter-spacing:-.5px; }
-		.videos .lead { font-size: clamp(1rem, 1.15vw, 1.07rem); color: var(--text-soft); max-width: 70ch; margin:0 0 1.75rem; }
-		.video-grid { display:grid; gap: clamp(1.5rem,2.2vw,2.2rem); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-		.video-card { display:flex; flex-direction:column; gap:.75rem; background: var(--bg); border-radius: 14px; padding:1rem 1rem 1.2rem; box-shadow: 0 3px 14px -4px rgba(0,0,0,.55), 0 2px 6px -3px rgba(0,0,0,.4); }
-		.video-frame { position:relative; width:100%; aspect-ratio: 16 / 9; background:#111922; border:1px solid #262d37; border-radius:10px; overflow:hidden; }
-		.video-frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
-		.video-card h3 { margin:.2rem 0 .1rem; font-size:1rem; letter-spacing:.3px; font-weight:600; }
-		.video-card p { margin:0; font-size:.85rem; color: var(--text-soft); line-height:1.4; }
-		@media (prefers-color-scheme: light) { .video-card { box-shadow: 0 4px 16px -6px rgba(0,0,0,.15), 0 2px 8px -4px rgba(0,0,0,.08); } .video-frame { background:#eef2f5; border-color:#d9e0e6; } }
+		@media (prefers-reduced-motion: reduce) {
+			html { scroll-behavior: auto; }
+			* { transition: none !important; }
+			.dust { display: none; }
+		}
 	</style>
 </head>
 <body>
-	<div class="wrap">
-		<header>
-		</header>
+	<!-- Aqui wordmark (Montserrat Black, coral q descender) and the Aq tile app icon -->
+	<svg class="sprite" aria-hidden="true">
+		<symbol id="wordmark" viewBox="-19 -821 2522 1019">
+			<g transform="scale(1 -1)" fill="currentColor">
+				<path d="M-19 0 287 700H519L825 0H581L355 588H447L221 0ZM163 122 223 292H545L605 122Z" />
+				<path transform="translate(806 0)" d="M285 -10Q214 -10 153.5 24.0Q93 58 57.0 121.5Q21 185 21 273Q21 361 57.0 424.5Q93 488 153.5 522.5Q214 557 285 557Q361 557 406.5 527.0Q452 497 472.5 434.5Q493 372 493 273Q493 176 471.0 113.5Q449 51 403.0 20.5Q357 -10 285 -10ZM339 166Q364 166 384.0 178.0Q404 190 416.0 214.0Q428 238 428 273Q428 309 416.0 333.0Q404 357 384.0 369.0Q364 381 339 381Q314 381 294.0 369.0Q274 357 262.0 333.0Q250 309 250 273Q250 238 262.0 214.0Q274 190 294.0 178.0Q314 166 339 166ZM424 -194V73L434 273L435 473V547H650V-194Z" />
+				<path transform="translate(1506 0)" d="M278 -10Q213 -10 160.5 16.5Q108 43 78.0 99.5Q48 156 48 245V547H274V284Q274 226 293.0 203.0Q312 180 345 180Q365 180 382.5 190.5Q400 201 411.0 225.5Q422 250 422 290V547H648V0H433V158L476 115Q447 51 393.5 20.5Q340 -10 278 -10Z" />
+				<path transform="translate(2204 0)" d="M50 0V547H276V0ZM163 591Q101 591 64.0 624.0Q27 657 27 706Q27 755 64.0 788.0Q101 821 163 821Q225 821 262.0 790.0Q299 759 299 710Q299 658 262.0 624.5Q225 591 163 591Z" />
+				<!-- The descender is coral unless the surrounding element sets --wm-accent -->
+				<rect x="1226" y="-198" width="234" height="188" fill="#f57d6a" style="fill: var(--wm-accent, #f57d6a)" />
+			</g>
+		</symbol>
+		<symbol id="tile" viewBox="21 21 66 66">
+			<rect x="21" y="21" width="66" height="66" fill="#f57d6a" />
+			<path fill="#000" d="M34.13 41.76V40.85L36.46 38.65Q36.73 38.4 36.86 38.2Q36.99 38 37.04 37.84Q37.09 37.67 37.09 37.54Q37.09 37.17 36.84 36.98Q36.6 36.78 36.12 36.78Q35.74 36.78 35.42 36.93Q35.09 37.08 34.87 37.39L33.85 36.73Q34.19 36.21 34.82 35.91Q35.44 35.61 36.25 35.61Q36.92 35.61 37.43 35.83Q37.94 36.05 38.22 36.45Q38.5 36.84 38.5 37.4Q38.5 37.69 38.42 37.98Q38.35 38.27 38.13 38.59Q37.91 38.91 37.49 39.31L35.55 41.13L35.28 40.62H38.7V41.76ZM40.07 41.83Q39.72 41.83 39.48 41.59Q39.23 41.35 39.23 40.98Q39.23 40.61 39.48 40.38Q39.72 40.15 40.07 40.15Q40.42 40.15 40.67 40.38Q40.91 40.61 40.91 40.98Q40.91 41.35 40.67 41.59Q40.42 41.83 40.07 41.83ZM43.59 41.86Q42.96 41.86 42.35 41.7Q41.73 41.53 41.29 41.22L41.84 40.14Q42.19 40.39 42.64 40.54Q43.09 40.69 43.56 40.69Q44.09 40.69 44.39 40.48Q44.69 40.27 44.69 39.9Q44.69 39.67 44.57 39.49Q44.45 39.31 44.14 39.21Q43.84 39.12 43.28 39.12H41.74L42.05 35.71H45.74V36.84H42.55L43.27 36.2L43.06 38.62L42.33 37.98H43.61Q44.51 37.98 45.06 38.23Q45.61 38.48 45.86 38.9Q46.11 39.32 46.11 39.86Q46.11 40.39 45.84 40.85Q45.57 41.3 45.02 41.58Q44.46 41.86 43.59 41.86Z" />
+			<path fill="#000" d="M33.12 68.46 41.9 48.37H48.56L57.34 68.46H50.34L43.85 51.59H46.49L40.01 68.46ZM38.34 64.96 40.07 60.08H49.31L51.03 64.96ZM64.4 68.75Q62.37 68.75 60.63 67.77Q58.89 66.8 57.86 64.97Q56.83 63.15 56.83 60.63Q56.83 58.1 57.86 56.28Q58.89 54.46 60.63 53.47Q62.37 52.47 64.4 52.47Q66.59 52.47 67.89 53.34Q69.2 54.2 69.79 55.99Q70.37 57.78 70.37 60.63Q70.37 63.41 69.74 65.2Q69.11 67 67.79 67.87Q66.47 68.75 64.4 68.75ZM65.95 63.7Q66.67 63.7 67.25 63.35Q67.82 63.01 68.16 62.32Q68.51 61.63 68.51 60.63Q68.51 59.59 68.16 58.9Q67.82 58.22 67.25 57.87Q66.67 57.53 65.95 57.53Q65.24 57.53 64.66 57.87Q64.09 58.22 63.74 58.9Q63.4 59.59 63.4 60.63Q63.4 61.63 63.74 62.32Q64.09 63.01 64.66 63.35Q65.24 63.7 65.95 63.7ZM68.39 74.03V66.37L68.68 60.63L68.71 54.89V52.76H74.88V74.03Z" />
+		</symbol>
+	</svg>
+
+	<header class="topbar">
+		<div class="wrap">
+			<a class="brand" href="#top" aria-label="Aqui home"><svg role="img" aria-label="Aqui"><use href="#wordmark" /></svg></a>
+			<nav class="nav" aria-label="Sections">
+				<a href="#app">App</a>
+				<a href="#parts">Parts</a>
+				<a href="#videos">Videos</a>
+				<a href="#sensor">Sensor</a>
+				<a href="#case">3D case</a>
+				<a href="#contribute">Contribute</a>
+			</nav>
+			<a class="btn compact" href="assets/app-release.apk" download="aqui-app-1.1.apk">Download APK</a>
+		</div>
+	</header>
+
+	<main id="top">
 		<section class="hero" aria-label="Aqui air quality sensor overview">
-			<div class="hero-media">
-				<figure>
-					<img src="product.gif" alt="Aqui air quality sensor animated view" loading="lazy" />
+			<div class="wrap split">
+				<div>
+					<svg class="tile" role="img" aria-label="Aqui app icon"><use href="#tile" /></svg>
+					<p class="eyebrow">Open hardware · CC0</p>
+					<h1>A DIY air quality sensor for your phone</h1>
+					<div class="lead">
+						<p>Aqui is an air quality sensor that connects to a phone and shows the real-time PM2.5 and PM10 particulate readings. By leaning on your phone’s processor, battery, and connectivity, Aqui itself stays radically minimal, efficient, and frugal.</p>
+						<p>Aqui is an open-source DIY electronics project, released under the Creative Commons CC0 dedication. The parts can be ordered from AliExpress or other electronics suppliers, and the enclosure can be 3D printed.</p>
+					</div>
+					<div class="actions">
+						<a class="btn" href="assets/app-release.apk" download="aqui-app-1.1.apk">Download APK</a>
+						<a class="btn outline" href="#videos">Watch demo</a>
+						<a class="btn outline" href="#parts">Build your own</a>
+					</div>
+					<div class="quick-links" aria-label="Project resources">
+						<a href="#videos">Assembly video</a>
+						<a href="#case">3D files</a>
+						<a href="https://github.com/ayushpatnaikgit/Aqui-App" target="_blank" rel="noopener">App source</a>
+						<a href="LICENSE">License (CC0)</a>
+					</div>
+					<p class="small byline">Ayush Patnaik is Director at <a href="https://leap-insights.org/" target="_blank" rel="noopener">Leap Insights</a>, Senior Research Associate at <a href="https://xkdr.org/" target="_blank" rel="noopener">xKDR Forum</a> and Founder of <a href="https://acciopix.com/" target="_blank" rel="noopener">AccioPix</a>.</p>
+				</div>
+				<div>
+					<figure>
+						<!-- Without the script (or with reduced motion) this shows the final, connected frame -->
+						<div class="frame demo" id="demo" data-state="live" role="img" aria-label="Animation: the coral Aqui sensor is plugged into an Android phone over USB, and the app goes from Plug in the sensor to live PM2.5 and PM10 readings">
+							<svg class="demo-art" viewBox="0 0 100 100" aria-hidden="true">
+								<!-- Dust drawn into the case's vents while the sensor's fan runs -->
+								<g class="dust" fill="#7a7a7a">
+									<circle cx="1.8" cy="48.5" r=".55" style="animation-delay: -.3s" />
+									<circle cx="2.6" cy="51.2" r=".45" style="animation-delay: -1.1s" />
+									<circle cx="1.4" cy="53.8" r=".6" style="animation-delay: -1.9s" />
+									<circle cx="3" cy="56.2" r=".4" style="animation-delay: -.7s" />
+									<circle cx="2.2" cy="50" r=".35" style="animation-delay: -1.5s" />
+									<circle cx="1.6" cy="57.6" r=".5" style="animation-delay: -2.2s" />
+								</g>
+								<!-- The coral case, with vents and the Aqui wordmark -->
+								<rect x="10" y="36" width="34" height="34" rx="2.4" fill="#f89c8e" />
+								<rect x="11.2" y="37.2" width="31.6" height="31.6" rx="1.6" fill="#f57d6a" />
+								<g fill="#d8604d">
+									<rect x="12.6" y="49.2" width="3.2" height=".9" rx=".45" />
+									<rect x="12.6" y="51.4" width="3.2" height=".9" rx=".45" />
+									<rect x="12.6" y="53.6" width="3.2" height=".9" rx=".45" />
+									<rect x="12.6" y="55.8" width="3.2" height=".9" rx=".45" />
+								</g>
+								<use href="#wordmark" x="18" y="49.4" width="18" height="7.27" style="color: #000; --wm-accent: #000" />
+								<!-- USB plug on the sensor, the cable, and the USB-C plug that goes into the phone -->
+								<g fill="#000">
+									<rect x="24.6" y="69.4" width="4.8" height="6.2" rx=".6" />
+									<rect x="25.6" y="75.4" width="2.8" height="1.6" />
+								</g>
+								<path class="cable" pathLength="1" d="M27 77V88Q27 94 33 94H65Q71 94 71 88V87" fill="none" stroke="#000" stroke-width="1.3" />
+								<g class="plug" fill="#000">
+									<rect x="69.1" y="82.8" width="3.8" height="5.4" rx=".7" />
+									<rect x="69.9" y="88" width="2.2" height="1.4" />
+								</g>
+							</svg>
+							<div class="phone" aria-hidden="true">
+								<div class="ph-bar"><span>14:32</span><i class="ph-cam"></i><span class="ph-sys"><i></i><i></i><i></i><b></b></span></div>
+								<div class="ph-top"><b>Aqui</b><span class="ph-status st-off"><i></i>No sensor</span><span class="ph-status st-on"><i></i>Connected</span></div>
+								<div class="ph-views">
+									<div class="ph-view v-empty">
+										<div class="ph-empty">
+											<svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="square"><path d="M12 3v18M12 21l-4-4M12 21l4-4M8 9l4 3 4-3" /><rect x="10.5" y="4.5" width="3" height="3" /></svg>
+											<div class="ph-title">Plug in the sensor</div>
+											<div class="ph-body">Connect the SDS011 to the USB-C port. Aqui connects on its own and starts reading within a few seconds.</div>
+										</div>
+										<div class="ph-foot">
+											<div class="ph-row"><span class="l" data-f="lastLeft">No readings yet</span><span class="r" data-f="lastRight" hidden><b>24 · 48</b> <span class="u">µg/m³</span></span></div>
+											<div class="ph-btn">Logs</div>
+										</div>
+									</div>
+									<div class="ph-view v-listen">
+										<div class="ph-empty">
+											<svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="square"><path d="M12 3v18M12 21l-4-4M12 21l4-4M8 9l4 3 4-3" /><rect x="10.5" y="4.5" width="3" height="3" /></svg>
+											<div class="ph-title">Listening</div>
+											<div class="ph-body">The sensor is connected. The first reading arrives within a few seconds.</div>
+										</div>
+										<div class="ph-foot">
+											<div class="ph-row"><span class="l">Connected</span></div>
+											<div class="ph-btn">Logs</div>
+										</div>
+									</div>
+									<div class="ph-view v-live">
+										<div class="ph-center">
+											<div>
+												<div class="ph-label">PM2.5 · µg/m³</div>
+												<div class="ph-num" data-f="pm25">24</div>
+											</div>
+											<div class="ph-band"><i class="sw" data-f="swatch" style="background: #e9c046"></i><span data-f="band">Moderate</span></div>
+											<div class="ph-hint" data-f="hint">Fine for most people.</div>
+											<div class="ph-hair"></div>
+											<div class="ph-pm10">
+												<div><div class="ph-label">PM10 · µg/m³</div><div class="v" data-f="pm10">48</div></div>
+												<div class="ph-band"><i class="sw" style="background: #3cb46e"></i>Good</div>
+											</div>
+										</div>
+										<div class="ph-foot">
+											<div class="ph-row"><span class="l" data-f="avg">Average of last 8: 19 · 39</span><span class="r" data-f="time">14:32:15</span></div>
+											<div class="ph-btn">Logs</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<figcaption>Aqui plugged into an Android phone</figcaption>
+					</figure>
+					<div class="card offer">
+						<span class="tag">Assembled units</span>
+						<p>If you want to buy a few assembled units, contact <a href="mailto:ayushpatnaik@gmail.com">ayushpatnaik@gmail.com</a> (Rs. 4000 per piece). We recommend building it yourself for the best learning and value.</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="section" id="app" aria-labelledby="app-heading">
+			<div class="wrap split app-grid">
+				<div>
+					<span class="chip">Version 1.1</span>
+					<h2 id="app-heading">Companion app</h2>
+					<p class="intro">The Aqui Android companion app is <a href="https://github.com/ayushpatnaikgit/Aqui-App" target="_blank" rel="noopener">open‑source on GitHub</a>. It connects to the sensor over USB serial and streams the live particulate data (PM2.5 / PM10) to your phone.</p>
+					<ul class="changes" aria-label="New in version 1.1">
+						<li><span><strong>New look.</strong> PM2.5 as one large number, with its air quality category and PM10 below.</span></li>
+						<li><span><strong>New icon.</strong> The coral Aq tile, with 2.5 in the corner.</span></li>
+						<li><span><strong>Steadier connection.</strong> More reliable connecting and disconnecting when the sensor is plugged in or pulled out.</span></li>
+					</ul>
+					<div class="download">
+						<a class="btn" href="assets/app-release.apk" download="aqui-app-1.1.apk">Download APK</a>
+						<span class="meta">v1.1 · 48 MB · Android 7.0 or newer</span>
+					</div>
+					<p class="small">Android asks you to allow installs from your browser the first time. Play Store listing coming soon.</p>
+					<p class="small"><strong>Special thanks</strong> to <a href="https://saurabhn.com/" target="_blank" rel="noopener">Saurabh Nandedkar</a> for help building the app.</p>
+				</div>
+				<figure class="app-figure">
+					<div class="phone" role="img" aria-label="Illustration of the app's live reading screen: PM2.5 24, Moderate; PM10 48, Good">
+						<div class="ph-top" aria-hidden="true"><b>Aqui</b><span class="ph-status"><i></i>Connected</span></div>
+						<div class="ph-center" aria-hidden="true">
+							<div>
+								<div class="ph-label">PM2.5 · µg/m³</div>
+								<div class="ph-num">24</div>
+							</div>
+							<div class="ph-band"><i class="sw" style="background: #e9c046"></i>Moderate</div>
+							<div class="ph-hint">Fine for most people.</div>
+							<div class="ph-hair"></div>
+							<div class="ph-pm10">
+								<div><div class="ph-label">PM10 · µg/m³</div><div class="v">48</div></div>
+								<div class="ph-band"><i class="sw" style="background: #3cb46e"></i>Good</div>
+							</div>
+						</div>
+						<div class="ph-foot" aria-hidden="true">
+							<div class="ph-row"><span class="l">Average of last 12: 23 · 46</span><span class="r">14:32:08</span></div>
+							<div class="ph-btn">Logs</div>
+						</div>
+					</div>
+					<figcaption>The live reading screen in v1.1</figcaption>
 				</figure>
 			</div>
-			<div class="hero-copy">
-					<h1>Aqui: DIY AQI sensor</h1>
-					<p>Aqui is an air quality sensor that connects to a phone and shows the real-time PM2.5 and PM10 particulate readings. By leaning on your phone’s processor, battery, and connectivity, Aqui itself stays radically minimal, efficient, and frugal.</p>
-					<p>Aqui is an open-source DIY electronics project, released under the Creative Commons CC0 dedication. The parts can be ordered from AliExpress or other electronics suppliers, and the enclosure can be 3D printed.</p>
-					<p style="margin-top:1.1rem;font-size:.98em;color:var(--text-soft);background:var(--bg-accent);padding:.85em 1em .85em 1em;border-radius:10px;box-shadow:0 2px 8px -2px rgba(0,0,0,.08);">
-						If you want to buy a few assembled units, contact <a href="mailto:ayushpatnaik@gmail.com">ayushpatnaik@gmail.com</a> (Rs. 4000 per piece). We recommend building it yourself for the best learning and value.
-					</p>
-					<p style="font-size:.9em;color:var(--text-soft);margin-top:.5rem;">Ayush Patnaik is Director at <a href="https://leap-insights.org/" target="_blank" rel="noopener">Leap Insights</a>, Senior Research Associate at <a href="https://xkdr.org/" target="_blank" rel="noopener">xKDR Forum</a> and Founder of <a href="https://acciopix.com/" target="_blank" rel="noopener">AccioPix</a>.</p>
-						<div class="hero-actions" aria-label="Primary actions">
-							<a class="btn" href="#videos" aria-label="Watch Aqui in action video">Watch Demo</a>
-							<a class="btn" href="#videos" aria-label="Watch assembly tutorial video">Assembly Video</a>
-							<a class="btn" href="https://github.com/ayushpatnaikgit/aqui/blob/website/assets/app-release.apk" download aria-label="Download the Aqui Android app APK">Download APK</a>
-						</div>
-					<div class="stack" aria-label="Project resources">
-						<a href="#" aria-label="View build guide (coming soon)">Build Guide</a>
-						<a href="#" aria-label="View parts list (coming soon)">Parts List</a>
-						<a href="#" aria-label="Download 3D case files" download>3D Files</a>
-						<a href="https://github.com/ayushpatnaikgit/aqui/blob/website/assets/app-release.apk" aria-label="Download Android companion app">Android App</a>
-						<a href="LICENSE" aria-label="View license details">License (CC0)</a>
-					</div>
+		</section>
+
+		<section class="section" id="parts" aria-labelledby="parts-heading">
+			<div class="wrap">
+				<div class="section-head">
+					<p class="eyebrow">DIY build guide</p>
+					<h2 id="parts-heading">Build your own Aqui</h2>
+					<p class="intro">Three parts: the sensor with its USB serial cable, an OTG cable for your phone, and a 3D printed case.</p>
+				</div>
+				<div class="grid">
+					<article class="card part">
+						<span class="tag">About Rs. 1600</span>
+						<img src="assets/parts/Sensor.png" alt="SDS011 sensor with USB serial cable" loading="lazy" />
+						<h3>SDS011 Sensor + USB Serial Cable</h3>
+						<p>Available on <a href="https://www.aliexpress.com/item/32817084913.html" target="_blank" rel="noopener">AliExpress</a> (subject to change; always search "SDS011 sensor" for latest price and availability).</p>
+						<p class="small">Price and link may vary over time.</p>
+					</article>
+					<article class="card part">
+						<span class="tag">Required</span>
+						<img src="assets/parts/adapter.png" alt="USB Type C to USB 3.0 OTG cable" loading="lazy" />
+						<h3>USB Type C to USB 3.0 OTG Cable</h3>
+						<p>Required to connect the sensor to most modern Android phones. Available on AliExpress, Amazon, or local electronics stores.</p>
+					</article>
+					<article class="card part">
+						<span class="tag">About Rs. 400</span>
+						<img src="assets/parts/case.png" alt="3D printed case" loading="lazy" />
+						<h3>3D Printed Case</h3>
+						<p>Print the enclosure using the <a href="#case">STL or STEP files</a> on any standard FDM 3D printer with PLA/ABS filament. A local shop can print it for around Rs. 400. If you are in Delhi, <a href="https://shaperjet.com/" target="_blank" rel="noopener">Shaperjet</a> is highly recommended for quality prints.</p>
+					</article>
+				</div>
+				<ul class="notes">
+					<li>You will also need a few small screws (M2), a screwdriver, and some tape or double-sided tape for assembly and securing the parts.</li>
+					<li>Follow the <a href="#videos">assembly video</a> and use the <a href="#app">companion app</a> to get real-time air quality readings on your phone.</li>
+				</ul>
 			</div>
 		</section>
-		<section class="app" id="app" aria-labelledby="app-heading">
-			<div class="app-inner app-grid">
-				<div>
-					<h2 id="app-heading">Companion App</h2>
-					<p class="lead">The Aqui Android companion app is <a href="https://github.com/ayushpatnaikgit/aqui" target="_blank" rel="noopener">open‑source on GitHub</a>. It connects to the sensor over USB serial and streams the live particulate data (PM2.5 / PM10) to your phone.</p>
-					<div style="margin-bottom:1em;font-size:.97em;color:var(--text-soft);"><b>Special thanks</b> to <a href="https://saurabhn.com/" target="_blank" rel="noopener">Saurabh Nandedkar</a> for help building the app.</div>
-					<div class="app-actions">
-						<br>
-                        
-                        <a class="btn primary" href="https://github.com/ayushpatnaikgit/aqui/blob/website/assets/app-release.apk" download aria-label="Download the Aqui Android APK">Download APK</a>
-						<span class="note">Play Store listing coming soon.</span>
-					</div>
+
+		<section class="section" id="videos" aria-labelledby="videos-heading">
+			<div class="wrap">
+				<div class="section-head">
+					<h2 id="videos-heading">Videos</h2>
+					<p class="intro">See Aqui working in the real world and learn how to assemble your own unit. These short clips demonstrate particulate spikes and the full build process.</p>
 				</div>
-				<div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;">
-					<video src="assets/app.mp4" controls playsinline muted autoplay loop style="width:100%;max-width:200px;height:320px;object-fit:cover;border-radius:12px;box-shadow:0 2px 8px -2px rgba(0,0,0,.12);background:#222;" poster="">
-						Your browser does not support the video tag.
-					</video>
-					<div style="font-size:.92em;color:var(--text-soft);margin-top:.4em;text-align:center;">App demo: live AQI readings</div>
-				</div>
-			</div>
-		</section>
-		<section class="details" id="details" aria-labelledby="details-heading">
-			<div class="details-inner">
-				<h2 id="details-heading">Sensor Details</h2>
-				<div class="details-grid">
-					<div class="details-media">
-						<img src="sds011-large.png" alt="SDS011 Particulate Matter Sensor" loading="lazy" />
-					</div>
-					<div class="details-copy">
-						<p>The SDS011 is a laser-based sensor that measures PM2.5 and PM10 particulate matter concentrations in the air. It uses a small fan to draw air in and a laser to detect particles. The sensor provides reliable, real-time data.</p>
-						<p>Data is transmitted from the sensor using the UART protocol, which allows it to be easily read by a microcontroller or other devices.</p>
-						<p>An <a href="https://aqicn.org/sensor/sds011/" target="_blank" rel="noopener">experiment by aqicn.org</a> shows the sensor is very accurate. It is suited for our use case i.e. intermittent air quality monitoring.</p>
-					</div>
-				</div>
-			</div>
-		</section>
-		<section class="videos" id="videos" aria-labelledby="videos-heading">
-			<div class="videos-inner">
-				<h2 id="videos-heading">Videos</h2>
-				<p class="lead">See Aqui working in the real world and learn how to assemble your own unit. These short clips demonstrate particulate spikes and the full build process.</p>
-				<div class="video-grid" role="list">
-					<article class="video-card" role="listitem">
-						<div class="video-frame">
+				<div class="grid" role="list">
+					<article class="video-item" role="listitem">
+						<div class="video">
 							<iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/qHSQzrInc68?rel=0&modestbranding=1" title="Aqui in action – live particulate spike demo" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 						</div>
-						<h3>Aqui In Action</h3>
+						<h3>Aqui in action</h3>
 						<p>Live demonstration of how PM2.5 / PM10 readings respond when incense (agarbatti) is lit near the intake.</p>
 					</article>
-					<article class="video-card" role="listitem">
-						<div class="video-frame">
+					<article class="video-item" role="listitem">
+						<div class="video">
 							<iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/voxknoohHVE?rel=0&modestbranding=1" title="Aqui assembly tutorial – build your own sensor" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 						</div>
-						<h3>Assembly Tutorial</h3>
+						<h3>Assembly tutorial</h3>
 						<p>Step-by-step walkthrough of sourcing parts, 3D printed case, and final assembly using the SDS011 sensor.</p>
 					</article>
 				</div>
-				<noscript><p style="font-size:.8rem;color:var(--text-soft);margin-top:1rem;">Video embeds require JavaScript/iframes. Watch directly on YouTube: <a href="https://youtu.be/qHSQzrInc68">Action Demo</a> • <a href="https://youtu.be/voxknoohHVE">Assembly Guide</a>.</p></noscript>
+				<noscript><p class="small">Video embeds require JavaScript/iframes. Watch directly on YouTube: <a href="https://youtu.be/qHSQzrInc68">Action Demo</a> • <a href="https://youtu.be/voxknoohHVE">Assembly Guide</a>.</p></noscript>
 			</div>
 		</section>
-		<section class="models" id="models" aria-labelledby="models-heading">
-			<div class="models-inner">
-				<h2 id="models-heading">DIY Build Guide</h2>
-				<p class="lead">Preview the printable enclosure parts directly in your browser. Download the STL files for the top and base. A STEP file is provided if you want to remix or adapt the design (optional).</p>
-				<section class="build-parts" aria-label="Parts List">
-					<h3 style="margin-top:2rem;margin-bottom:.5rem;font-size:1.08rem;">DIY: Build Your Own Aqui</h3>
-					<div style="overflow-x:auto;margin-bottom:1.5rem;">
-						<table style="width:100%;border-collapse:collapse;background:var(--bg-accent);border-radius:12px;box-shadow:0 2px 8px -2px rgba(0,0,0,.10);">
-							<thead>
-								<tr style="background:var(--bg);color:var(--accent);">
-									<th style="padding:.8em .6em;text-align:left;font-size:1em;">Part</th>
-									<th style="padding:.8em .6em;text-align:left;font-size:1em;">Description</th>
-									<th style="padding:.8em .6em;text-align:left;font-size:1em;">Image</th>
-								</tr>
-							</thead>
-							<tbody style="color:var(--text-soft);font-size:.98em;">
-								<tr>
-									<td><strong>SDS011 Sensor + USB Serial Cable</strong></td>
-									<td>Approx. <b>Rs. 1600</b> on AliExpress.<br>
-										<a href="https://www.aliexpress.com/item/32817084913.html" target="_blank" rel="noopener">AliExpress link</a> (subject to change; always search "SDS011 sensor" for latest price and availability).<br><span style="font-size:.92em;opacity:.7;">Price and link may vary over time.</span>
-									</td>
-									<td style="text-align:center;"><img src="assets/parts/Sensor.png" alt="SDS011 Sensor" style="max-width:90px;height:auto;border-radius:8px;box-shadow:0 2px 8px -2px rgba(0,0,0,.12);background:#222;" /></td>
-								</tr>
-								<tr>
-									<td><strong>USB Type C to USB 3.0 OTG Cable</strong></td>
-									<td>Required to connect the sensor to most modern Android phones.<br>Available on AliExpress, Amazon, or local electronics stores.</td>
-									<td style="text-align:center;"><img src="assets/parts/adapter.png" alt="USB Type C to USB 3.0 OTG Cable" style="max-width:90px;height:auto;border-radius:8px;box-shadow:0 2px 8px -2px rgba(0,0,0,.12);background:#222;" /></td>
-								</tr>
-								<tr>
-									<td><strong>3D Printed Case</strong></td>
-									<td>Print the enclosure using the provided STL or STEP files.<br>You can use any standard FDM 3D printer and PLA/ABS filament.<br>3D printing can be done at a local shop for around <b>Rs. 400</b>. If you are in Delhi, <a href="https://shaperjet.com/" target="_blank" rel="noopener">Shaperjet</a> is highly recommended for quality prints.</td>
-									<td style="text-align:center;"><img src="assets/parts/case.png" alt="3D Printed Case" style="max-width:90px;height:auto;border-radius:8px;box-shadow:0 2px 8px -2px rgba(0,0,0,.12);background:#222;" /></td>
-								</tr>
-							</tbody>
-						</table>
-						<ul style="margin-top:1.2rem;font-size:.98em;color:var(--text-soft);padding-left:1.2em;">
-							<li>You will also need a few small screws (M2), a screwdriver, and some tape or double-sided tape for assembly and securing the parts.</li>
-							<li>Follow the build guide and use the companion app to get real-time air quality readings on your phone.</li>
-						</ul>
-					</div>
-				</section>
-				<div class="model-grid" role="list">
-					<article class="model-card" role="listitem">
-						<header><h3 class="model-title">Top Shell</h3></header>
-						<div class="viewer-frame">
-							<iframe id="vs_iframe_top" title="Top shell 3D preview" loading="lazy" src="https://www.viewstl.com/?embedded&url=https%3A%2F%2Fraw.githubusercontent.com%2Fayushpatnaikgit%2Faqui.github.io%2Fmain%2Fassets%2Forange%2520top.stl&color=green&bgcolor=transparent"></iframe>
+
+		<section class="section" id="sensor" aria-labelledby="sensor-heading">
+			<div class="wrap split sensor-grid">
+				<img src="sds011-large.png" alt="SDS011 particulate matter sensor" loading="lazy" />
+				<div>
+					<h2 id="sensor-heading">Sensor details</h2>
+					<p>The SDS011 is a laser-based sensor that measures PM2.5 and PM10 particulate matter concentrations in the air. It uses a small fan to draw air in and a laser to detect particles. The sensor provides reliable, real-time data.</p>
+					<p>Data is transmitted from the sensor using the UART protocol, which allows it to be easily read by a microcontroller or other devices.</p>
+					<p>An <a href="https://aqicn.org/sensor/sds011/" target="_blank" rel="noopener">experiment by aqicn.org</a> shows the sensor is very accurate. It is suited for our use case i.e. intermittent air quality monitoring.</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="section" id="case" aria-labelledby="case-heading">
+			<div class="wrap">
+				<div class="section-head">
+					<h2 id="case-heading">3D printed case</h2>
+					<p class="intro">Preview the printable enclosure parts directly in your browser, and drag a preview to turn it. Download the STL files for the top and base. A STEP file is provided if you want to remix or adapt the design (optional).</p>
+				</div>
+				<div class="grid" role="list">
+					<article class="model" role="listitem">
+						<!-- Rendered by the 3D preview script at the end of the page -->
+						<div class="viewer" data-stl="assets/orange%20top.stl" data-color="#f57d6a" role="img" aria-label="3D preview of the top shell in coral">
+							<p class="viewer-msg">3D preview</p>
 						</div>
-						<div class="model-actions">
-							<a class="btn ghost" href="assets/orange%20top.stl" download>Download STL</a>
-						</div>
+						<h3>Top shell</h3>
+						<a class="btn outline compact" href="assets/orange%20top.stl" download>Download STL</a>
 					</article>
-					<article class="model-card" role="listitem">
-						<header><h3 class="model-title">Base</h3></header>
-						<div class="viewer-frame">
-							<iframe id="vs_iframe_base" title="Base shell 3D preview" loading="lazy" src="https://www.viewstl.com/?embedded&url=https%3A%2F%2Fraw.githubusercontent.com%2Fayushpatnaikgit%2Faqui.github.io%2Fmain%2Fassets%2Fblack%2520base.stl&color=azure&bgcolor=transparent"></iframe>
+					<article class="model" role="listitem">
+						<div class="viewer" data-stl="assets/black%20base.stl" data-color="#1f1f1f" role="img" aria-label="3D preview of the base in black">
+							<p class="viewer-msg">3D preview</p>
 						</div>
-						<div class="model-actions">
-							<a class="btn ghost" href="assets/black%20base.stl" download>Download STL</a>
-						</div>
+						<h3>Base</h3>
+						<a class="btn outline compact" href="assets/black%20base.stl" download>Download STL</a>
 					</article>
-					<article class="model-card optional" role="listitem">
-						<header><h3 class="model-title">Full Assembly (STEP)</h3></header>
-						<div class="viewer-frame placeholder">
-							<div class="step-note"><strong>.STEP</strong> is a neutral CAD exchange format that preserves precise parametric geometry (not just a triangle mesh).<br>Use it to modify or remix the enclosure in a CAD program, then export an STL for printing.</div>
+					<article class="model" role="listitem">
+						<div class="viewer note">
+							<p><strong>.STEP</strong> is a neutral CAD exchange format that preserves precise parametric geometry (not just a triangle mesh). Use it to modify or remix the enclosure in a CAD program, then export an STL for printing.</p>
 						</div>
-						<div class="model-actions">
-							<a class="btn ghost" href="assets/casing%20v9.step" download>Download STEP (Optional)</a>
-						</div>
+						<h3>Full assembly (STEP, optional)</h3>
+						<a class="btn outline compact" href="assets/casing%20v9.step" download>Download STEP</a>
 					</article>
 				</div>
 			</div>
 		</section>
-		<section class="contribute" id="contribute" aria-labelledby="contribute-heading">
-			<div class="contribute-inner">
-				<h2 id="contribute-heading">Contribute</h2>
-				<p class="lead">Aqui is an open-source project and we welcome contributions. Here are a few ways you can help:</p>
-				<div class="contribute-grid">
-					<div class="contribute-card">
-						<h3>Financial Support</h3>
+
+		<section class="section" id="contribute" aria-labelledby="contribute-heading">
+			<div class="wrap">
+				<div class="section-head">
+					<h2 id="contribute-heading">Contribute</h2>
+					<p class="intro">Aqui is an open-source project and we welcome contributions. Here are a few ways you can help:</p>
+				</div>
+				<div class="ways">
+					<div class="way">
+						<span class="num">01</span>
+						<h3>Financial support</h3>
 						<p>Support Aqui financially to help us assemble more devices. We will donate these to students or researchers who can benefit from air quality monitoring.</p>
 					</div>
-					<div class="contribute-card">
-						<h3>Logo & Branding</h3>
+					<div class="way">
+						<span class="num">02</span>
+						<h3>Logo &amp; branding</h3>
 						<p>If you have graphic design skills, help us create a logo or other branding assets for Aqui. Visual identity makes the project more recognizable and inviting.</p>
 					</div>
-					<div class="contribute-card">
-						<h3>Android Development</h3>
-						<p>If you're an Android developer, you can help improve the companion app. There are always new features to add and bugs to fix.</p>
+					<div class="way">
+						<span class="num">03</span>
+						<h3>Android development</h3>
+						<p>If you're an Android developer, you can help improve the <a href="https://github.com/ayushpatnaikgit/Aqui-App" target="_blank" rel="noopener">companion app</a>. There are always new features to add and bugs to fix.</p>
 					</div>
-					<div class="contribute-card">
-						<h3>Case Design</h3>
+					<div class="way">
+						<span class="num">04</span>
+						<h3>Case design</h3>
 						<p>If you have experience with 3D modeling and printing, you can help improve the case design to make it more robust, easier to print, or more aesthetically pleasing.</p>
 					</div>
-					<div class="contribute-card">
-						<h3>Assembly & Manufacturing</h3>
+					<div class="way">
+						<span class="num">05</span>
+						<h3>Assembly &amp; manufacturing</h3>
 						<p>If you're interested in manufacturing and assembly, you can help streamline the process of building Aqui devices, making it easier for others to build their own.</p>
 					</div>
 				</div>
-				<p>Any other help is also welcome. The ultimate objective of this project is to bring awareness about air quality. If you have ideas or skills that could help, please reach out to <a href="mailto:ayushpatnaik@gmail.com">ayushpatnaik@gmail.com</a>.</p>
+				<p class="closing">Any other help is also welcome. The ultimate objective of this project is to bring awareness about air quality. If you have ideas or skills that could help, please reach out to <a href="mailto:ayushpatnaik@gmail.com">ayushpatnaik@gmail.com</a>.</p>
 			</div>
 		</section>
-		<footer>
-			<div>Made with care • Open hardware • CC0 1.0 Universal</div>
-		</footer>
-	</div>
+	</main>
+
+	<footer>
+		<div class="footer">
+			<div class="wrap footer-grid">
+				<div>
+					<a class="brand" href="#top" aria-label="Back to top"><svg role="img" aria-label="Aqui"><use href="#wordmark" /></svg></a>
+					<p>An ultra-frugal, open-source DIY air quality sensor that pairs with your phone to show real-time PM2.5 and PM10.</p>
+				</div>
+				<div>
+					<h4>App</h4>
+					<ul class="footer-links">
+						<li><a href="assets/app-release.apk" download="aqui-app-1.1.apk">Download APK</a></li>
+						<li><a href="https://github.com/ayushpatnaikgit/Aqui-App" target="_blank" rel="noopener">Source code</a></li>
+					</ul>
+				</div>
+				<div>
+					<h4>Build</h4>
+					<ul class="footer-links">
+						<li><a href="#parts">Parts</a></li>
+						<li><a href="#case">3D files</a></li>
+						<li><a href="#videos">Videos</a></li>
+					</ul>
+				</div>
+				<div>
+					<h4>Contact</h4>
+					<ul class="footer-links">
+						<li><a href="mailto:ayushpatnaik@gmail.com">ayushpatnaik@gmail.com</a></li>
+						<li><a href="#contribute">Contribute</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="footer-last">
+			<div class="wrap">
+				<span>Made with care · Open hardware</span>
+				<a href="LICENSE">CC0 1.0 Universal</a>
+			</div>
+		</div>
+	</footer>
+
+	<script>
+		/*
+		 * Hero animation: plug the sensor in, then one reading a second, as the
+		 * SDS011 sends them. Screens, wording and averaging follow the app's
+		 * EmptyState, LiveReading and useSensorData.
+		 */
+		(() => {
+			const demo = document.getElementById('demo');
+			if (!demo || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+				return;
+			}
+			const PM25 = [11, 14, 17, 19, 21, 22, 24, 24];
+			const PM10 = [22, 29, 35, 39, 43, 45, 47, 48];
+			const field = name => demo.querySelector(`[data-f="${name}"]`);
+			const clock = i => `14:32:${String(8 + i).padStart(2, '0')}`;
+			const average = (list, n) => Math.round(parseFloat((list.slice(0, n).reduce((a, b) => a + b, 0) / n).toFixed(1)));
+
+			function showReading(i) {
+				const good = PM25[i] <= 12; // the app's upper limit for Good PM2.5
+				field('pm25').textContent = PM25[i];
+				field('pm10').textContent = PM10[i];
+				field('band').textContent = good ? 'Good' : 'Moderate';
+				field('hint').textContent = good ? 'Clean air right now.' : 'Fine for most people.';
+				field('swatch').style.background = good ? '#3cb46e' : '#e9c046';
+				field('avg').textContent = i === 0 ? 'First reading' : `Average of last ${i + 1}: ${average(PM25, i + 1)} · ${average(PM10, i + 1)}`;
+				field('time').textContent = clock(i);
+			}
+
+			// Each start() bumps run; a timer from an older run rejects, which ends that loop.
+			let run = 0;
+			const wait = (ms, id) => new Promise((resolve, reject) => setTimeout(() => (id === run ? resolve() : reject()), ms));
+			const setState = state => { demo.dataset.state = state; };
+
+			async function play(id) {
+				for (;;) {
+					setState('unplugged');
+					await wait(2000, id);
+					setState('cable');
+					await wait(1100, id);
+					setState('listening');
+					await wait(1500, id);
+					showReading(0);
+					setState('live');
+					for (let i = 1; i < PM25.length; i++) {
+						await wait(1000, id);
+						showReading(i);
+					}
+					await wait(2200, id);
+					field('lastLeft').textContent = `Last reading ${clock(PM25.length - 1)}`;
+					field('lastRight').hidden = false;
+				}
+			}
+
+			function start() {
+				const id = ++run;
+				demo.classList.add('instant');
+				field('lastLeft').textContent = 'No readings yet';
+				field('lastRight').hidden = true;
+				setState('unplugged');
+				void demo.offsetWidth;
+				demo.classList.remove('instant');
+				play(id).catch(() => {});
+			}
+
+			if (!('IntersectionObserver' in window)) {
+				start();
+				return;
+			}
+			new IntersectionObserver(([entry]) => {
+				if (entry.isIntersecting) {
+					start();
+				} else {
+					run++;
+				}
+			}, { threshold: 0.25 }).observe(demo);
+		})();
+	</script>
+
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js",
+				"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+			}
+		}
+	</script>
+	<script type="module">
+		/*
+		 * 3D previews of the printable case: the STL files in assets/, coloured
+		 * like the printed parts. three.js loads only when the section comes near
+		 * the screen, and each preview renders only while it is visible.
+		 */
+		const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		let libraries;
+
+		async function mount(viewer) {
+			const message = viewer.querySelector('.viewer-msg');
+			message.textContent = 'Loading 3D preview';
+			try {
+				libraries ??= Promise.all([
+					import('three'),
+					import('three/addons/loaders/STLLoader.js'),
+					import('three/addons/controls/OrbitControls.js'),
+				]);
+				const [THREE, { STLLoader }, { OrbitControls }] = await libraries;
+				const geometry = await new STLLoader().loadAsync(viewer.dataset.stl);
+				geometry.center();
+				geometry.computeBoundingSphere();
+
+				const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+				renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+				viewer.append(renderer.domElement);
+
+				const scene = new THREE.Scene();
+				scene.add(new THREE.HemisphereLight(0xffffff, 0x8f8a85, 2));
+				const key = new THREE.DirectionalLight(0xffffff, 2.4);
+				key.position.set(80, 140, 100);
+				const rim = new THREE.DirectionalLight(0xffffff, 0.9);
+				rim.position.set(-120, 60, -80);
+				scene.add(key, rim);
+				scene.add(new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: viewer.dataset.color, roughness: 0.55, flatShading: true })));
+
+				const camera = new THREE.PerspectiveCamera(30, 1, 1, 5000);
+				const distance = geometry.boundingSphere.radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * 1.1;
+				camera.position.set(1, 0.8, 1.2).setLength(distance);
+
+				const controls = new OrbitControls(camera, renderer.domElement);
+				controls.enableZoom = false;
+				controls.enablePan = false;
+				controls.enableDamping = true;
+				controls.autoRotate = !still;
+				controls.autoRotateSpeed = 1.5;
+				controls.minPolarAngle = 0.2;
+				controls.maxPolarAngle = 1.5;
+				// Vertical swipes still scroll the page on touch screens; horizontal drags turn the model.
+				renderer.domElement.style.touchAction = 'pan-y';
+
+				const resize = () => {
+					renderer.setSize(viewer.clientWidth, viewer.clientHeight, false);
+					camera.aspect = viewer.clientWidth / viewer.clientHeight;
+					camera.updateProjectionMatrix();
+				};
+				resize();
+				new ResizeObserver(resize).observe(viewer);
+
+				let visible = false;
+				let frame = 0;
+				const tick = () => {
+					controls.update();
+					renderer.render(scene, camera);
+					frame = visible ? requestAnimationFrame(tick) : 0;
+				};
+				new IntersectionObserver(([entry]) => {
+					visible = entry.isIntersecting;
+					if (visible && !frame) {
+						tick();
+					}
+				}).observe(viewer);
+				message.remove();
+			} catch (error) {
+				message.textContent = '3D preview unavailable. Download the STL below.';
+			}
+		}
+
+		const nearby = new IntersectionObserver(entries => {
+			for (const entry of entries) {
+				if (entry.isIntersecting) {
+					nearby.unobserve(entry.target);
+					mount(entry.target);
+				}
+			}
+		}, { rootMargin: '300px 0px' });
+		document.querySelectorAll('.viewer[data-stl]').forEach(viewer => nearby.observe(viewer));
+	</script>
 </body>
 </html>
