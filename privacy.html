@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Aqui – Privacy policy</title>
+	<meta name="description" content="Privacy policy for the Aqui Android app: it collects no personal data and has no internet access." />
+	<meta name="theme-color" content="#f2f1f0" />
+	<link rel="icon" type="image/svg+xml" href="assets/brand/aqui-icon.svg" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Montserrat:wght@700;800&display=swap" />
+	<style>
+		:root {
+			--paper: #f2f1f0;
+			--ink: #000000;
+			--body: #212529;
+			--muted: #4b4b4b;
+			--rule: #d6d6d6;
+			--coral: #f57d6a;
+			--sans: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+			--serif: "Merriweather", Georgia, serif;
+			color-scheme: light;
+		}
+		* { box-sizing: border-box; }
+		body { margin: 0; background: var(--paper); color: var(--body); font-family: var(--serif); font-size: 15px; line-height: 1.75; -webkit-font-smoothing: antialiased; }
+		a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--coral); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+		a:hover { color: var(--coral); }
+		.topbar { border-bottom: 2px solid var(--ink); }
+		.wrap { max-width: 760px; margin: 0 auto; padding-inline: 16px; }
+		.topbar .wrap { display: flex; align-items: center; height: 72px; }
+		.home { font-family: var(--sans); font-weight: 800; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; }
+		main { padding-block: 56px 80px; }
+		h1 { font-family: var(--sans); font-weight: 800; color: var(--ink); font-size: clamp(32px, 6vw, 48px); line-height: 1.1; margin: 0 0 8px; }
+		h2 { font-family: var(--sans); font-weight: 800; color: var(--ink); font-size: 18px; line-height: 1.3; margin: 40px 0 8px; }
+		.updated { font-family: var(--sans); font-weight: 700; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin: 0 0 32px; }
+		.summary { border: 2px solid var(--ink); border-left: 10px solid var(--coral); padding: 16px 20px; margin-bottom: 8px; }
+		p { margin: 0 0 16px; }
+		ul { padding-left: 20px; margin: 0 0 16px; }
+		footer { border-top: 1px solid var(--rule); padding-block: 24px; font-size: 13px; color: var(--muted); }
+	</style>
+</head>
+<body>
+	<header class="topbar">
+		<div class="wrap"><a class="home" href="./">← Aqui</a></div>
+	</header>
+	<main class="wrap">
+		<h1>Privacy policy</h1>
+		<p class="updated">Aqui Android app · Last updated 18 November 2026</p>
+
+		<p class="summary">Aqui does not collect, store, or share any personal data. The app has no internet access, so nothing it reads can leave your phone.</p>
+
+		<h2>What the app does</h2>
+		<p>Aqui (package <code>org.xkdr.aqui</code>) reads particulate-matter measurements (PM2.5 and PM10) from an SDS011 or SDS021 sensor plugged into your phone's USB port, and shows them on screen.</p>
+
+		<h2>Data the app handles</h2>
+		<ul>
+			<li><strong>Sensor readings and the connection log</strong> are kept in the phone's memory only while the app is open. They are not written to storage, not backed up, and are gone when you close the app.</li>
+			<li>The app does <strong>not</strong> access your location, contacts, camera, microphone, files, accounts, or any identifiers.</li>
+			<li>The app contains no analytics, advertising, crash reporting, or other third-party services.</li>
+		</ul>
+
+		<h2>Permissions</h2>
+		<p>The only permission the app uses is access to the USB device you plug in. Android asks you to allow this the first time a sensor is connected. The app does not request the internet permission, so it cannot send or receive data over the network.</p>
+
+		<h2>Sharing</h2>
+		<p>Because no data is collected, none is shared with or sold to anyone.</p>
+
+		<h2>Children</h2>
+		<p>The app is not directed at children and collects no data from anyone.</p>
+
+		<h2>Changes</h2>
+		<p>If a future version changes how data is handled, this page will be updated before that version is released, and the date above will change.</p>
+
+		<h2>Contact</h2>
+		<p>Questions about this policy: <a href="mailto:ayushpatnaik@gmail.com">ayushpatnaik@gmail.com</a>. The app's source code is public at <a href="https://github.com/ayushpatnaikgit/Aqui-App">github.com/ayushpatnaikgit/Aqui-App</a>.</p>
+	</main>
+	<footer>
+		<div class="wrap">Aqui · <a href="./">aqui.xkdr.org</a></div>
+	</footer>
+</body>
+</html>
